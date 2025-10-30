@@ -15,7 +15,7 @@ The core training script is located in [`sentiment_distilbert.py`](sentiment_dis
 ![Experiment1](src/exp1.png)
 
 In this file, we perform **fine-tuning** using:
-- **Dataset:** Amazon Reviews (multi-domain sentiment dataset)  [(Dataset)](https://drive.google.com/file/d/1erK4WF-4dlzPIGkiDPDI8wbmWeK5DjKd/view)
+- **Dataset:** Amazon Reviews (multi-domain sentiment dataset)  [(Dataset)](https://www.kaggle.com/datasets/mexwell/amazon-reviews-multi/data)
 - **Base Model:** `distilbert/distilbert-base-uncased` [(Model)](https://huggingface.co/distilbert/distilbert-base-uncased)
 
 The fine-tuning process adapts the model for **sentiment polarity classification** (e.g., positive, neutral, negative) and evaluates its generalization across languages.
