@@ -9,14 +9,12 @@ import numpy as np
 import wandb
 from transformers import AutoTokenizer, EarlyStoppingCallback , DataCollatorWithPadding
 from transformers import AutoModelForSequenceClassification, TrainingArguments, Trainer
-from huggingface_hub import notebook_login
 import torch
+#from huggingface_hub import notebook_login
 
 
 
 
-# LOGIN TO HUGGINGFACE HUB
-# notebook_login()
 
 
 # ==================== SETUP WANDB ====================
@@ -36,14 +34,21 @@ amazon_db = load_dataset( 'csv' , data_files={ 'train': dataset_path + '/train.c
 
 
 
-
 # ==================== PREPROCESSING ====================
+model_name = os.getenv('MODEL_NAME')  
 def preprocess_function(examples):
-    return tokenizer(examples["text"], padding="max_length", truncation=True)
+    return tokenizer(examples["review_body"], padding="max_length", truncation=True) # TODO : Instead of use review_body alone use also review_title
 
-model_name = os.getenv('MODEL_NAME')
+# Tokenization
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 amazon_db_tokenized = amazon_db.map(preprocess_function, batched=True) # features: ['text', 'label' , 'ids' , 'mask']
+
+# Rename columns and remove unnecessary ones
+amazon_db_tokenized = amazon_db_tokenized.rename_column("stars", "label")
+amazon_db_tokenized = amazon_db_tokenized.rename_column("review_body", "text")
+amazon_db_tokenized = amazon_db_tokenized.remove_columns(["Unnamed: 0", 'review_id', 'product_id', 'reviewer_id', 'review_title', 'language', 'product_category'])  # Remove unnecessary index column
+
+# Data collator
 data_collator = DataCollatorWithPadding(tokenizer=tokenizer) # dynamically padding for token list (so we can batch different length inputs)
 
 
@@ -65,9 +70,37 @@ accuracy = evaluate.load("accuracy")
 
 
 # ==================== MODEL TRAINING ====================
-id2label = {0: "NEGATIVE", 1: "POSITIVE"}
-label2id = {"NEGATIVE": 0, "POSITIVE": 1}
-model = AutoModelForSequenceClassification.from_pretrained( model_name , num_labels=2 , id2label=id2label , label2id=label2id )
+id2label = {1: "VERY NEGATIVE", 2: "NEGATIVE", 3: "NEUTRAL", 4: "POSITIVE", 5: "VERY POSITIVE"}
+label2id = {"VERY NEGATIVE": 1, "NEGATIVE": 2, "NEUTRAL": 3, "POSITIVE": 4, "VERY POSITIVE": 5}
+model = AutoModelForSequenceClassification.from_pretrained( model_name , num_labels=5 , id2label=id2label , label2id=label2id )
+# TRAINING ARGUMENTS
+training_args = TrainingArguments(
+    output_dir=output_dir,
+    learning_rate=2e-5,
+    per_device_train_batch_size=16,
+    per_device_eval_batch_size=16,
+    # gradient_accumulation_steps=2,
+    num_train_epochs=2, # usually 2-5 epochs are sufficient for finetuning
+    weight_decay=0.01, # penalize large weights, regularization, helps generalization
+    eval_strategy="epoch", # other options: "no", "steps"
+    save_strategy="epoch",
+    load_best_model_at_end=True,
+    push_to_hub=False,  # Huggingface hub integration
+    report_to="wandb",
+)
+
+trainer = Trainer(
+    model=model,
+    args=training_args,
+    train_dataset=amazon_db_tokenized["train"],
+    eval_dataset=amazon_db_tokenized["test"],
+    processing_class=tokenizer,
+    data_collator=data_collator,
+    compute_metrics=compute_metrics,
+    # callbacks=[EarlyStoppingCallback(early_stopping_patience=2)], # need to switch from epochs to steps and set eval_steps for this to work
+)
+
+trainer.train()
 
 
 
@@ -85,3 +118,9 @@ else:
     print("Using CPU (no GPU acceleration available)")
 
 model.to(device)
+
+
+
+## ==================== MODEL EVALUATION ====================
+trainer.evaluate(metric_key_prefix="test")
+
