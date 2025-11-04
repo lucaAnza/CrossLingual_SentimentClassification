@@ -15,7 +15,9 @@ import torch
 
 
 
-
+# ==================== Get env variables ====================
+dataset_path = os.getenv('DATASET_PATH')
+model_name = os.getenv('MODEL_NAME')
 
 # ==================== SETUP MODEL CHECK POINT DIRECTORIES ====================
 base_output_dir = "models"
@@ -29,7 +31,6 @@ wandb.init(name="multilingual-distilbert (EXP1- reduced data)")
 
 
 # ==================== LOAD DATASET ====================
-dataset_path = os.getenv('DATASET_PATH')
 amazon_db = load_dataset( 'csv' , data_files={ 'train': dataset_path + '/train.csv', 'test': dataset_path + '/test.csv'  , 'validation': dataset_path + '/validation.csv' } )
 
 
@@ -43,7 +44,6 @@ amazon_db['train'] = amazon_db['train'].select(range(30000))
 amazon_db['test'] = amazon_db['test'].select(range(5000))                                                
 amazon_db['validation'] = amazon_db['validation'].select(range(5000))                                  
 # ======================================================================================================    
-model_name = os.getenv('MODEL_NAME')
 
 # Fix labels to start from 0
 def adjust_label(example):
