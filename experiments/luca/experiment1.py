@@ -38,11 +38,13 @@ amazon_db = load_dataset( 'csv' , data_files={ 'train': dataset_path + '/train.c
 
 # ==================== PREPROCESSING ====================
 
-### TEMPRORARY: Reduce dataset size for faster experimentation =========================================
-# get only first 30000 samples from train set for faster experimentation
-amazon_db['train'] = amazon_db['train'].select(range(30000))    
-amazon_db['test'] = amazon_db['test'].select(range(5000))                                                
-amazon_db['validation'] = amazon_db['validation'].select(range(5000))                                  
+### TEMPRORARY: Reduce dataset size for faster experimentation ========================================= 
+# TODO : Shuffle the array otherwise we are getting only first k samples which may be biased !!!
+# get only first k samples from train set for faster experimentation
+k = 1000
+amazon_db['train'] = amazon_db['train'].select(range(k))    
+amazon_db['test'] = amazon_db['test'].select(range(k//6))                                                
+amazon_db['validation'] = amazon_db['validation'].select(range(k//6))                                  
 # ======================================================================================================    
 
 # Fix labels to start from 0
@@ -80,8 +82,6 @@ def compute_metrics(eval_pred):
     predictions, labels = eval_pred
     print(predictions.shape)
     print(labels.shape)
-    print(predictions)
-    print(labels)
     predictions = np.argmax(predictions, axis=1)
     return accuracy.compute(predictions=predictions, references=labels)
 
@@ -125,14 +125,14 @@ trainer = Trainer(
 # Check if MPS is available (for Mac with M1/M2/M3 chips)
 if torch.backends.mps.is_available():
     device = torch.device("mps")
-    print("✅ Using MPS device")
+    print("⚠️ Using MPS device")
 # Check if CUDA is available (for NVIDIA GPUs)
 elif torch.cuda.is_available():
     device = torch.device("cuda")
     print(f"✅ Using CUDA device: {torch.cuda.get_device_name(0)}")
 else:
     device = torch.device("cpu")
-    print("✅ Using CPU (no GPU acceleration available)")
+    print("⚠️ Using CPU (no GPU acceleration available)")
 
 model.to(device)
 print("✅ Trainer is set up. Starting training...")
