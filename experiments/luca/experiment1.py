@@ -37,15 +37,12 @@ amazon_db = load_dataset( 'csv' , data_files={ 'train': dataset_path + '/train.c
 
 
 # ==================== PREPROCESSING ====================
-
-### TEMPRORARY: Reduce dataset size for faster experimentation ========================================= 
-# TODO : Shuffle the array otherwise we are getting only first k samples which may be biased !!!
-# get only first k samples from train set for faster experimentation
-k = 1000
-amazon_db['train'] = amazon_db['train'].select(range(k))    
-amazon_db['test'] = amazon_db['test'].select(range(k//6))                                                
-amazon_db['validation'] = amazon_db['validation'].select(range(k//6))                                  
-# ======================================================================================================    
+# Reduce dataset size for faster experimentation 
+k = 50000
+amazon_db['train'] = amazon_db['train'].shuffle(seed=42).select(range(k))
+amazon_db['test'] = amazon_db['test'].shuffle(seed=42).select(range(k//6))
+amazon_db['validation'] = amazon_db['validation'].shuffle(seed=42).select(range(k//6))    
+   
 
 # Fix labels to start from 0
 def adjust_label(example):
@@ -80,7 +77,7 @@ print("\n✅ Preprocessing completed. Db struct : " , amazon_db_tokenized)
 # ==================== EVALUATION DEFINITION ====================
 def compute_metrics(eval_pred):
     predictions, labels = eval_pred
-    print(predictions.shape)
+    print("\n\n" , predictions.shape)
     print(labels.shape)
     predictions = np.argmax(predictions, axis=1)
     return accuracy.compute(predictions=predictions, references=labels)
@@ -100,7 +97,7 @@ training_args = TrainingArguments(
     per_device_train_batch_size=16,
     per_device_eval_batch_size=16,
     # gradient_accumulation_steps=2,   # it is useful when you have memory issues (e.g. OOM errors) to simulate larger batch sizes
-    num_train_epochs=2, # usually 2-5 epochs are sufficient for finetuning
+    num_train_epochs=5, # usually 2-5 epochs are sufficient for finetuning
     weight_decay=0.01, # penalize large weights, regularization, helps generalization
     eval_strategy="epoch", # other options: "no", "steps"
     save_strategy="epoch", # when the model is saved
@@ -137,8 +134,6 @@ else:
 model.to(device)
 print("✅ Trainer is set up. Starting training...")
 trainer.train()
-
-
 
 
 
