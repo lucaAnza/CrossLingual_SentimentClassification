@@ -2,7 +2,6 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # 0=all, 1=filter INFO, 2=filter WARNING, 3=filter ERROR
 from dotenv import load_dotenv
 load_dotenv()  # take environment variables from .env.
-hf_token = os.getenv("HF_TOKEN")
 from datasets import load_dataset
 import evaluate
 import numpy as np
@@ -38,7 +37,7 @@ amazon_db = load_dataset( 'csv' , data_files={ 'train': dataset_path + '/train.c
 
 # ==================== PREPROCESSING ====================
 # Reduce dataset size for faster experimentation 
-k = 50000
+k = 1000
 amazon_db['train'] = amazon_db['train'].shuffle(seed=42).select(range(k))
 amazon_db['test'] = amazon_db['test'].shuffle(seed=42).select(range(k//6))
 amazon_db['validation'] = amazon_db['validation'].shuffle(seed=42).select(range(k//6))    
