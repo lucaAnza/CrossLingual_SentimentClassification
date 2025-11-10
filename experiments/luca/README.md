@@ -3,6 +3,7 @@
 ## How to setup a run
 
 1. Install conda [Conda official webpage](https://docs.conda.io/projects/conda/en/stable/user-guide/install/index.html)
+   - [Linux installer](https://www.anaconda.com/docs/getting-started/miniconda/install#linux-terminal-installer)
 2. Create a conda environment `conda env create -n NLP -f environment.yml`
    - If you add some package export again `conda env export > environment.yml`
 

@@ -16,7 +16,8 @@ import torch
 
 # ==================== Get env variables ====================
 dataset_path = os.getenv('DATASET_PATH')
-model_name = os.getenv('MODEL_NAME')
+model_name = 'distilbert-base-multilingual-cased'
+wandb_api_key = os.getenv("WANDB_API_KEY")
 
 # ==================== SETUP MODEL CHECK POINT DIRECTORIES ====================
 base_output_dir = "models"
@@ -24,10 +25,7 @@ run_name = "multilingual-distilbert-finetuned-amazon-reviews"
 output_dir = os.path.join(base_output_dir, run_name)
 
 # ==================== SETUP WANDB ====================
-wandb_api_key = os.getenv("WANDB_API_KEY")
-os.environ["WANDB_PROJECT"] = "ai509"  # Set the env variable so wandb che read it
 wandb.init(name="multilingual-distilbert (EXP1- reduced data)")
-
 
 # ==================== LOAD DATASET ====================
 amazon_db = load_dataset( 'csv' , data_files={ 'train': dataset_path + '/train.csv', 'test': dataset_path + '/test.csv'  , 'validation': dataset_path + '/validation.csv' } )
@@ -60,7 +58,6 @@ amazon_db = amazon_db.remove_columns(["Unnamed: 0", 'review_id', 'product_id', '
 # Tokenization
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 amazon_db_tokenized = amazon_db.map(preprocess_function, batched=True) # features: ['text', 'label' , 'ids' , 'mask']
-
 
 # Fix labels to start from 0
 amazon_db_tokenized = amazon_db_tokenized.map(adjust_label)
