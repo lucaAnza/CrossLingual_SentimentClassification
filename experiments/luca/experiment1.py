@@ -21,11 +21,13 @@ wandb_api_key = os.getenv("WANDB_API_KEY")
 
 # ==================== SETUP MODEL CHECK POINT DIRECTORIES ====================
 base_output_dir = "models"
-run_name = "multilingual-distilbert-finetuned-amazon-reviews"
+run_name = "multilingual-distilbert-finetuned-amazon-reviews"  # define the name of the /models/<run_name> 
+run_name = "martin_training"  # define the name of the /models/<run_name> 
 output_dir = os.path.join(base_output_dir, run_name)
 
-# ==================== SETUP WANDB ====================
-wandb.init(name="multilingual-distilbert (EXP1- reduced data)")
+"""# ==================== SETUP WANDB ====================
+wandb.init(name="Experiment1 - Checkpoint test")
+report_list = ["wandb"]  """
 
 # ==================== LOAD DATASET ====================
 amazon_db = load_dataset( 'csv' , data_files={ 'train': dataset_path + '/train.csv', 'test': dataset_path + '/test.csv'  , 'validation': dataset_path + '/validation.csv' } )
@@ -35,10 +37,21 @@ amazon_db = load_dataset( 'csv' , data_files={ 'train': dataset_path + '/train.c
 
 # ==================== PREPROCESSING ====================
 # Reduce dataset size for faster experimentation 
-k = 1000
+k = 10000
 amazon_db['train'] = amazon_db['train'].shuffle(seed=42).select(range(k))
 amazon_db['test'] = amazon_db['test'].shuffle(seed=42).select(range(k//6))
-amazon_db['validation'] = amazon_db['validation'].shuffle(seed=42).select(range(k//6))    
+amazon_db['validation'] = amazon_db['validation'].shuffle(seed=42).select(range(k//6)) 
+
+# print the amount of each label in the training set
+def print_label_distribution(dataset, split_name):
+    labels = dataset['label']
+    unique, counts = np.unique(labels, return_counts=True)
+    label_distribution = dict(zip(unique, counts))
+    print(f"\nLabel distribution in {split_name} set: {label_distribution}")
+print_label_distribution(amazon_db['train'], 'train')
+
+import sys
+sys.exit(0)
    
 
 # Fix labels to start from 0
@@ -93,13 +106,13 @@ training_args = TrainingArguments(
     per_device_train_batch_size=16,
     per_device_eval_batch_size=16,
     # gradient_accumulation_steps=2,   # it is useful when you have memory issues (e.g. OOM errors) to simulate larger batch sizes
-    num_train_epochs=5, # usually 2-5 epochs are sufficient for finetuning
+    num_train_epochs=1, # usually 2-5 epochs are sufficient for finetuning
     weight_decay=0.01, # penalize large weights, regularization, helps generalization
     eval_strategy="epoch", # other options: "no", "steps"
     save_strategy="epoch", # when the model is saved
     load_best_model_at_end=True,
     push_to_hub=False,  # Huggingface hub integration
-    report_to="wandb",
+    report_to=report_list, 
 )
 
 trainer = Trainer(
@@ -110,7 +123,6 @@ trainer = Trainer(
     processing_class=tokenizer,
     data_collator=data_collator,
     compute_metrics=compute_metrics,
-    callbacks=[EarlyStoppingCallback(early_stopping_patience=2)], # need to switch from epochs to steps and set eval_steps for this to work
 )
 
 
@@ -129,7 +141,13 @@ else:
 
 model.to(device)
 print("✅ Trainer is set up. Starting training...")
-trainer.train()
+
+
+print("Do you want to resume from a checkpoint? (y/n)")
+if input().strip().lower() == "y":
+    trainer.train(resume_from_checkpoint=True)
+else:
+    trainer.train()
 
 
 
