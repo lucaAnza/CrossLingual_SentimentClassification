@@ -42,18 +42,6 @@ amazon_db['train'] = amazon_db['train'].shuffle(seed=42).select(range(k))
 amazon_db['test'] = amazon_db['test'].shuffle(seed=42).select(range(k//6))
 amazon_db['validation'] = amazon_db['validation'].shuffle(seed=42).select(range(k//6)) 
 
-# print the amount of each label in the training set
-def print_label_distribution(dataset, split_name):
-    labels = dataset['label']
-    unique, counts = np.unique(labels, return_counts=True)
-    label_distribution = dict(zip(unique, counts))
-    print(f"\nLabel distribution in {split_name} set: {label_distribution}")
-print_label_distribution(amazon_db['train'], 'train')
-
-import sys
-sys.exit(0)
-   
-
 # Fix labels to start from 0
 def adjust_label(example):
     example['label'] = example['label'] - 1
