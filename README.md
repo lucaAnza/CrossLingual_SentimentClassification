@@ -8,7 +8,7 @@ We explore multiple datasets covering various linguistic domains and cultural co
 
 ## Experiments
 
-### 1. Fine-Tuning using **Distilbert**
+### 1. Fine-Tuning using **Distilbert-base-multilingual-cased**
 
 The core training script is located in [`sentiment_distilbert.py`](sentiment_distilbert.py).
 
@@ -18,5 +18,4 @@ In this file, we perform **fine-tuning** using:
 - **Dataset:** Amazon Reviews (multi-domain sentiment dataset)  [(Dataset)](https://www.kaggle.com/datasets/mexwell/amazon-reviews-multi/data)
 - **Base Model:** `distilbert/distilbert-base-uncased` [(Model)](https://huggingface.co/distilbert/distilbert-base-uncased)
 
-The fine-tuning process adapts the model for **sentiment polarity classification** (e.g., positive, neutral, negative) and evaluates its generalization across languages.
 
