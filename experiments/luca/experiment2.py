@@ -25,8 +25,12 @@ run_name = "experiment2_regression"  # define the name of the /models/<run_name>
 output_dir = os.path.join(base_output_dir, run_name)
 
 """# ==================== SETUP WANDB ====================
-wandb.init(name="Experiment1 - Checkpoint test")
-report_list = ["wandb"]  """
+report_list = ["wandb"] 
+wandb.init(
+    project="CrossLingual-Sentiment-GPU(SDU)",   
+    name=run_name + "_wandb",  
+)
+"""
 
 # ==================== LOAD DATASET ====================
 amazon_db = load_dataset( 'csv' , data_files={ 'train': dataset_path + '/train.csv', 'test': dataset_path + '/test.csv'  , 'validation': dataset_path + '/validation.csv' } )
@@ -38,8 +42,8 @@ amazon_db = load_dataset( 'csv' , data_files={ 'train': dataset_path + '/train.c
 # Reduce dataset size for faster experimentation 
 k = 150000
 amazon_db['train'] = amazon_db['train'].shuffle(seed=42).select(range(k))
-amazon_db['test'] = amazon_db['test'].shuffle(seed=42).select(range(k//6))
-amazon_db['validation'] = amazon_db['validation'].shuffle(seed=42).select(range(k//6)) 
+amazon_db['test'] = amazon_db['test'].shuffle(seed=42).select(range(min(30000 , k//6)))
+amazon_db['validation'] = amazon_db['validation'].shuffle(seed=42).select(range(min(30000 , k//6)))
 
 # Add ids column + mask column
 def preprocess_function(examples):
