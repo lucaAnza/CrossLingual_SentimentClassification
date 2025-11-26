@@ -45,10 +45,6 @@ amazon_db['train'] = amazon_db['train'].shuffle(seed=42).select(range(k))
 amazon_db['test'] = amazon_db['test'].shuffle(seed=42).select(range(min(30000 , k//6)))
 amazon_db['validation'] = amazon_db['validation'].shuffle(seed=42).select(range(min(30000 , k//6)))
 
-# Add ids column + mask column
-def preprocess_function(examples):
-    return tokenizer(examples["text"], padding="max_length", truncation=True) # TODO : Instead of use review_body alone use also review_title
-
 # Rename columns and remove unnecessary ones
 amazon_db = amazon_db.rename_column("stars", "label")
 amazon_db = amazon_db.rename_column("review_body", "text")
@@ -56,11 +52,15 @@ amazon_db = amazon_db.remove_columns(["Unnamed: 0", 'review_id', 'product_id', '
 amazon_db = amazon_db.cast_column("label", Value("float32"))  # regression needs continuous labels
 
 # Tokenization
+# Add ids column + mask column
+def preprocess_function(examples):
+    return tokenizer(examples["text"], truncation=True) # TODO : Instead of use review_body alone use also review_title
+
 tokenizer = AutoTokenizer.from_pretrained(model_name)
-amazon_db_tokenized = amazon_db.map(preprocess_function, batched=True) # features: ['text', 'label' , 'ids' , 'mask']
+amazon_db_tokenized = amazon_db.map(preprocess_function, batched=True) # features: ['text', 'label' , 'ids' , 'mask']  (batched=True for speed up the mapping process)
 
 # Data collator
-data_collator = DataCollatorWithPadding(tokenizer=tokenizer) # dynamically padding for token list (so we can batch different length inputs)
+data_collator = DataCollatorWithPadding(tokenizer=tokenizer) # Defines how batches are created during training (uses dynamic padding)
 print("\n✅ Preprocessing completed. Db struct : " , amazon_db_tokenized)
 
 
@@ -88,8 +88,8 @@ model = AutoModelForSequenceClassification.from_pretrained(
 training_args = TrainingArguments(
     output_dir=output_dir,
     learning_rate=2e-5,
-    per_device_train_batch_size=32,
-    per_device_eval_batch_size=32,
+    per_device_train_batch_size=64,
+    per_device_eval_batch_size=64,
     num_train_epochs=8, # usually 2-5 epochs are sufficient for finetuning
     weight_decay=0.01, # penalize large weights, regularization, helps generalization
     eval_strategy="epoch", # other options: "no", "steps"

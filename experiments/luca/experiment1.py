@@ -53,7 +53,7 @@ def adjust_label(example):
 
 # Add ids column + mask column
 def preprocess_function(examples):
-    return tokenizer(examples["text"], padding="max_length", truncation=True) # TODO : Instead of use review_body alone use also review_title
+    return tokenizer(examples["text"] ,  truncation=True) # TODO : Instead of use review_body alone use also review_title
 
 # Rename columns and remove unnecessary ones
 amazon_db = amazon_db.rename_column("stars", "label")
@@ -68,7 +68,7 @@ amazon_db_tokenized = amazon_db.map(preprocess_function, batched=True) # feature
 amazon_db_tokenized = amazon_db_tokenized.map(adjust_label)
 
 # Data collator
-data_collator = DataCollatorWithPadding(tokenizer=tokenizer) # dynamically padding for token list (so we can batch different length inputs)
+data_collator = DataCollatorWithPadding(tokenizer=tokenizer) # Defines how batches are created during training (uses dynamic padding)
 print("\n✅ Preprocessing completed. Db struct : " , amazon_db_tokenized)
 
 
