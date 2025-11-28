@@ -70,11 +70,25 @@ print("\n✅ Preprocessing completed. Db struct : " , amazon_db_tokenized)
 # ==================== EVALUATION DEFINITION ====================
 def compute_metrics(eval_pred):
     predictions, labels = eval_pred
+
+    # Flatten (because Trainer sometimes returns extra dimensions)
     preds = predictions.reshape(-1)
     labels = labels.reshape(-1)
+
+    # --- Regression metrics ---
     mae = np.mean(np.abs(preds - labels))
     rmse = np.sqrt(np.mean((preds - labels) ** 2))
-    return {"mae": mae.item(), "rmse": rmse.item()}
+
+    # --- Accuracy metrics ---
+    preds_rounded = np.rint(preds)   # Round predictions to nearest integer ex : 2.3→2, 2.8→3
+    preds_rounded = np.clip(preds_rounded, 1, 5) # Clamp values to valid range (1–5) if needed
+    accuracy = np.mean(preds_rounded == labels) # Compute accuracy
+
+    return {
+        "mae": mae.item(),     # item() to convert numpy types to native Python types
+        "rmse": rmse.item(),
+        "accuracy": accuracy.item()
+    }
 
 
 
