@@ -1,7 +1,11 @@
-from transformers import Trainer, TrainingArguments, AutoTokenizer, AutoModelForSequenceClassification
+from transformers import AutoTokenizer, EarlyStoppingCallback , DataCollatorWithPadding
+from transformers import AutoModelForSequenceClassification, TrainingArguments, Trainer
 import torch
 import os
+from dotenv import load_dotenv
 from datasets import load_dataset, Value
+import numpy as np
+load_dotenv()  # loads .env 
 
 
 # =========  PARAMS =========
@@ -29,12 +33,51 @@ amazon_db = amazon_db.cast_column("label", Value("float32"))  # regression needs
 def preprocess_function(examples):
     return tokenizer(examples["text"], truncation=True) # TODO : Instead of use review_body alone use also review_title
 
-tokenizer = AutoTokenizer.from_pretrained(model_name)
+tokenizer = AutoTokenizer.from_pretrained(run_name)
 amazon_db_tokenized = amazon_db.map(preprocess_function, batched=True) # features: ['text', 'label' , 'ids' , 'mask']  (batched=True for speed up the mapping process)
 
 # Data collator
 data_collator = DataCollatorWithPadding(tokenizer=tokenizer) # Defines how batches are created during training (uses dynamic padding)
 print("\n✅ Preprocessing completed. Db struct : " , amazon_db_tokenized)
+
+
+# =========  DEFINE THE METRICS =========
+def compute_metrics(eval_pred):
+    predictions, labels = eval_pred   
+
+    preds = predictions.reshape(-1)
+    labels = labels.reshape(-1)
+
+    # --- Regression metrics ---
+    mae = np.mean(np.abs(preds - labels))
+    rmse = np.sqrt(np.mean((preds - labels) ** 2))
+
+    # --- Accuracy (stars 1–5) ---
+    preds_rounded = np.rint(preds)
+    preds_rounded = np.clip(preds_rounded, 1, 5)
+    accuracy = np.mean(preds_rounded == labels)
+
+    # --- Accuracy_3 (bins: [0–1]→1, [2–3]→2, [4]→3) ---
+    # Convert labels to bins
+    def bin3(x):
+        if x <= 1:
+            return 1
+        elif x <= 3:
+            return 2
+        else:
+            return 3
+
+    labels_binned = np.array([bin3(x) for x in labels])
+    preds_binned = np.array([bin3(x) for x in preds_rounded])
+
+    accuracy_3 = np.mean(preds_binned == labels_binned)
+
+    return {
+        "mae": mae.item(),
+        "rmse": rmse.item(),
+        "accuracy": accuracy.item(),
+        "accuracy_3": accuracy_3.item()
+    }
 
 
 # =========  LOAD THE MODEL =========
@@ -48,32 +91,18 @@ training_args = TrainingArguments(
 trainer = Trainer(
     model=model,
     args=training_args,
-    tokenizer=tokenizer,
+    processing_class=tokenizer,
     eval_dataset=amazon_db_tokenized["test"],
-    compute_metrics=compute_metrics,   # same function you used before
+    compute_metrics=compute_metrics,   
+    report_to=None,
 )
 
-# =========  COMPUTE THE METRICS =========
-def compute_metrics(eval_pred):
-    predictions, labels = eval_pred   
 
-    preds = predictions.reshape(-1)
-    labels = labels.reshape(-1)
-
-    # --- Regression metrics ---
-    mae = np.mean(np.abs(preds - labels))
-    rmse = np.sqrt(np.mean((preds - labels) ** 2))
-
-    # --- Accuracy metrics ---
-    preds_rounded = np.rint(preds)   # Round predictions to nearest integer ex : 2.3→2, 2.8→3
-    preds_rounded = np.clip(preds_rounded, 1, 5) # Clamp values to valid range (1–5) if needed
-    accuracy = np.mean(preds_rounded == labels) # Compute accuracy
-
-    return {
-        "mae": mae.item(),     # item() to convert numpy types to native Python types
-        "rmse": rmse.item(),
-        "accuracy": accuracy.item()
-    }
-
+# =========  RECOMPUTE THE METRICS =========
+print("\n⚙ Recomputing the metrics for the datasets!")
 metrics = trainer.evaluate()
-print(metrics)
+print("\n✅ Metring re-computed with success!")
+print("Metrics : ")
+for k,v in metrics.items():
+    print("\t",k,":"," ",v)
+
