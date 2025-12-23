@@ -9,8 +9,6 @@ import wandb
 from transformers import AutoTokenizer, EarlyStoppingCallback , DataCollatorWithPadding
 from transformers import AutoModelForSequenceClassification, TrainingArguments, Trainer
 import torch
-#from huggingface_hub import notebook_login
-
 
 
 
@@ -22,16 +20,19 @@ report_list = ["none"]  # default no reporting
 
 # ==================== SETUP MODEL CHECK POINT DIRECTORIES ====================
 base_output_dir = "models"
-run_name = "experiment1"  # define the name of the /models/<run_name> 
+run_name = "exp1_classification_1.2m_wandb-"  # define the name of the /models/<run_name> 
+run_name = "delete_me"  # define the name of the /models/<run_name> 
 output_dir = os.path.join(base_output_dir, run_name)
 
-"""# ==================== SETUP WANDB ====================
+# ==================== SETUP WANDB ====================
+"""
 report_list = ["wandb"] 
 wandb.init(
     project="CrossLingual-Sentiment-GPU(SDU)",   
     name=run_name + "_wandb",  
 )
 """
+
 
 # ==================== LOAD DATASET ====================
 amazon_db = load_dataset( 'csv' , data_files={ 'train': dataset_path + '/train.csv', 'test': dataset_path + '/test.csv'  , 'validation': dataset_path + '/validation.csv' } )
@@ -41,7 +42,7 @@ amazon_db = load_dataset( 'csv' , data_files={ 'train': dataset_path + '/train.c
 
 # ==================== PREPROCESSING ====================
 # Reduce dataset size for faster experimentation 
-k = 150000
+k = 2000
 amazon_db['train'] = amazon_db['train'].shuffle(seed=42).select(range(k))
 amazon_db['test'] = amazon_db['test'].shuffle(seed=42).select(range(min(30000 , k//6)))
 amazon_db['validation'] = amazon_db['validation'].shuffle(seed=42).select(range(min(30000 , k//6)))
@@ -52,20 +53,23 @@ def adjust_label(example):
     return example
 
 # Add ids column + mask column
+# TODO : FIX THIS PREPROCESSING !!!
 def preprocess_function(examples):
-    return tokenizer(examples["text"], padding="max_length", truncation=True) # TODO : Instead of use review_body alone use also review_title
-
-# Rename columns and remove unnecessary ones
-amazon_db = amazon_db.rename_column("stars", "label")
-amazon_db = amazon_db.rename_column("review_body", "text")
-amazon_db = amazon_db.remove_columns(["Unnamed: 0", 'review_id', 'product_id', 'reviewer_id', 'review_title', 'language', 'product_category'])  # Remove unnecessary index column
+    print(examples["review_title"] , type(examples["review_title"]))
+    print(examples["review_body"] , type(examples["review_body"]))
+    text = examples["review_title"] + " [SEP] " + examples["review_body"]
+    return tokenizer(text , truncation=True) 
 
 # Tokenization
 tokenizer = AutoTokenizer.from_pretrained(model_name)
-amazon_db_tokenized = amazon_db.map(preprocess_function, batched=True) # features: ['text', 'label' , 'ids' , 'mask']
+amazon_db_tokenized = amazon_db.map(preprocess_function, batched=True)  # features : [ 'review_body' , 'review_id' , ... , label' , 'ids' , 'mask']
+
+# Rename columns and remove unnecessary ones
+amazon_db = amazon_db.rename_column("stars", "label")
+amazon_db = amazon_db.remove_columns(["Unnamed: 0", 'review_body' , 'review_id', 'product_id', 'reviewer_id', 'review_title', 'language', 'product_category'])  # Remove unnecessary index column
 
 # Fix labels to start from 0
-amazon_db_tokenized = amazon_db_tokenized.map(adjust_label)
+amazon_db_tokenized = amazon_db_tokenized.map(adjust_label)  # features : [ label' , 'ids' , 'mask']
 
 # Data collator
 data_collator = DataCollatorWithPadding(tokenizer=tokenizer) # dynamically padding for token list (so we can batch different length inputs)
@@ -77,13 +81,20 @@ print("\n✅ Preprocessing completed. Db struct : " , amazon_db_tokenized)
 
 # ==================== EVALUATION DEFINITION ====================
 def compute_metrics(eval_pred):
-    predictions, labels = eval_pred
-    print("\n\n" , predictions.shape)
-    print(labels.shape)
-    predictions = np.argmax(predictions, axis=1)
-    return accuracy.compute(predictions=predictions, references=labels)
+    logits, labels = eval_pred
+    preds = np.argmax(logits, axis=1)
+
+    return {
+        "accuracy": accuracy.compute(predictions=preds, references=labels)["accuracy"],
+        "f1_macro": f1.compute(
+            predictions=preds,
+            references=labels,
+            average="macro"
+        )["f1"]
+    }
 
 accuracy = evaluate.load("accuracy")
+f1 = evaluate.load("f1")
 
 
 
@@ -91,19 +102,20 @@ accuracy = evaluate.load("accuracy")
 id2label = {0: "VERY NEGATIVE", 1: "NEGATIVE", 2: "NEUTRAL", 3: "POSITIVE", 4: "VERY POSITIVE"}
 label2id = {"VERY NEGATIVE": 0, "NEGATIVE": 1, "NEUTRAL": 2, "POSITIVE": 3, "VERY POSITIVE": 4}
 model = AutoModelForSequenceClassification.from_pretrained( model_name , num_labels=5 , id2label=id2label , label2id=label2id )
-# TRAINING ARGUMENTS
+# TRAINING ARGUMENTS (loss function by default : categorical Cross-Entropy)
 training_args = TrainingArguments(
     output_dir=output_dir,
     learning_rate=2e-5,
-    per_device_train_batch_size=32,
-    per_device_eval_batch_size=32,
-    # gradient_accumulation_steps=2,   # it is useful when you have memory issues (e.g. OOM errors) to simulate larger batch sizes
-    num_train_epochs=5, # usually 2-5 epochs are sufficient for finetuning
+    warmup_ratio = 0.1, # 10% of total training steps are used to increase the learning rate linearly from 0 → base LR
+    lr_scheduler_type = "linear", # Increase and decrease aftet warmup is linear
+    per_device_train_batch_size=64, # Better to keep it smaller (better generalization)
+    gradient_accumulation_steps=2,  # In this way accumulate the gradient so is like 128 (best throughput)
+    per_device_eval_batch_size=128,  # I can leave big (gradient not computed into evaluation)
+    num_train_epochs=8, # usually 2-5 epochs are sufficient for finetuning
     weight_decay=0.01, # penalize large weights, regularization, helps generalization
     eval_strategy="epoch", # other options: "no", "steps"
     save_strategy="epoch", # when the model is saved
     load_best_model_at_end=True,
-    push_to_hub=False,  # Huggingface hub integration
     report_to=report_list, 
 )
 
@@ -143,8 +155,5 @@ else:
 
 
 
-
-
 ## ==================== MODEL EVALUATION ====================
 trainer.evaluate(metric_key_prefix="test")
-
