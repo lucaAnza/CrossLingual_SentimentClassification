@@ -1,6 +1,5 @@
-from transformers import AutoTokenizer, DataCollatorWithPadding
+from transformers import AutoTokenizer , DataCollatorWithPadding
 from transformers import AutoModelForSequenceClassification, TrainingArguments, Trainer
-import torch
 import os
 from dotenv import load_dotenv
 from datasets import load_dataset, Value

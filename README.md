@@ -21,4 +21,4 @@ In this file, we perform **fine-tuning** using:
 
 ### 2. Fine-Tuning for regression using **Distilbert-base-multilingual-cased**
 
-All settings are the same of experiments1 except for the preprocessing and
+All settings are the same of [Experiment1](#1.fine-tuningformulticlassclassificationusing**Distilbert-base-multilingual-cased**) except for the **preprocessing** and **evaluation**.
