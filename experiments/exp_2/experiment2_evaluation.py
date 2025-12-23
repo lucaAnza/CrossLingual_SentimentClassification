@@ -1,4 +1,4 @@
-from transformers import AutoTokenizer, EarlyStoppingCallback , DataCollatorWithPadding
+from transformers import AutoTokenizer, DataCollatorWithPadding
 from transformers import AutoModelForSequenceClassification, TrainingArguments, Trainer
 import torch
 import os
