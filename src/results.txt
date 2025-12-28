@@ -1,0 +1,25 @@
+{
+    "dataset_size": 100000,
+    "eval_loss": 0.03913089632987976,
+    "eval_mae": 0.6001810431480408,
+    "eval_qwk": 0.8125846920345633,
+    "eval_rmse": 0.7912611961364746,
+    "eval_rounded_accuracy": 0.5274210968438737,
+    "eval_rounded_accuracy_3": 0.7427697107884316,
+},
+{
+    "dataset_size": 200000,
+    "eval_loss": 0.03551206737756729,
+    "eval_mae": 0.5542571544647217,
+    "eval_qwk": 0.8350607246644606,
+    "eval_rmse": 0.7537858486175537,
+    "eval_rounded_accuracy": 0.5675666666666667,
+    "eval_rounded_accuracy_3": 0.766,
+},
+{
+    "dataset_size": 300000,
+    "eval_accuracy": 0.5350333333333334,
+    "eval_loss": 0.687590479850769,
+    "eval_mae": 0.6061334609985352,
+    "eval_rmse": 0.8292107582092285,
+}
