@@ -1,4 +1,5 @@
-{
+{   
+    "epoch": 4.0,
     "dataset_size": 100000,
     "eval_loss": 0.03913089632987976,
     "eval_mae": 0.6001810431480408,
@@ -8,6 +9,7 @@
     "eval_rounded_accuracy_3": 0.7427697107884316,
 },
 {
+    "epoch": 5.0,
     "dataset_size": 200000,
     "eval_loss": 0.03551206737756729,
     "eval_mae": 0.5542571544647217,
@@ -16,10 +18,36 @@
     "eval_rounded_accuracy": 0.5675666666666667,
     "eval_rounded_accuracy_3": 0.766,
 },
-{
+{   
+    "epoch": 5.0,
     "dataset_size": 300000,
     "eval_accuracy": 0.5350333333333334,
     "eval_loss": 0.687590479850769,
     "eval_mae": 0.6061334609985352,
     "eval_rmse": 0.8292107582092285,
+},
+{   
+    "epoch": 4.0,
+    "dataset_size": 600000,
+    "eval_loss": 0.03146504983305931,
+    "eval_mae": 0.5260732769966125,
+    "eval_qwk": 0.8480592838265015,
+    "eval_rmse": 0.7095355987548828,
+    "eval_rounded_accuracy": 0.5854666666666667,
+    "eval_rounded_accuracy_3": 0.7784333333333333,
+},
+{
+    "epoch": 4.0,
+    "dataset_size": 1200000,
+    "eval_loss": 0.02995375543832779,
+    "eval_mae": 0.5080955028533936,
+    "eval_qwk": 0.8544406756195486,
+    "eval_rmse": 0.6922860741615295,
+    "eval_rounded_accuracy": 0.5959,
+    "eval_rounded_accuracy_3": 0.7840666666666667,
+    "eval_runtime": 63.2388,
+    "eval_samples_per_second": 474.392,
+    "eval_spearmanr": 0.8552865574965405,
+    "eval_steps_per_second": 3.716,
+    "step": 37500
 }
