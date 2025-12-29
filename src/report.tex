@@ -1,0 +1,393 @@
+\documentclass[11pt]{article}
+
+% ---------- Packages ----------
+\usepackage[a4paper,margin=2.5cm]{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{todonotes}
+
+% ---------- Title ----------
+\title{\textbf{Sentiment Analysis of Multilingual Amazon Reviews}\\
+AI509/508/DM894 Final Project Report}
+\author{Imanshu Sharma \and Alberto Aiello \and Luca Anzaldi}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+% Optional (not required by template, but commonly useful)
+\begin{abstract}
+This project investigates sentiment prediction on a multilingual Amazon Reviews dataset.
+We study (i) how much target-language data is needed to reach near-peak performance,
+(ii) whether a single multilingual model trained on all languages outperforms monolingual
+models trained per language, and (iii) the per-language ranking of performance.
+We present an initial baseline experiment using a compact multilingual encoder model to
+validate the pipeline and assess training efficiency.
+\end{abstract}
+
+% =========================================================
+% 1. Introduction and Problem Presentation
+% =========================================================
+\section{Introduction and Problem Presentation}
+
+\subsection{Task description}
+Given an Amazon review text, the goal is to predict its sentiment.
+We consider two related formulations:
+\begin{itemize}[itemsep=2pt]
+    \item \textbf{Classification:} predict discrete sentiment labels (e.g., negative / neutral / positive or 1--5 stars).
+    \item \textbf{Regression:} predict a continuous sentiment score derived from the 1--5 star rating.
+\end{itemize}
+In later experiments, we focus on cross-lingual behavior and compare performance across languages.
+
+\subsection{Project goal and research questions}
+Our project investigates the following questions:
+\begin{enumerate}[itemsep=2pt]
+    \item \textbf{How much target-language data is needed?}
+    We vary training set size (e.g., 10\%, 30\%, 50\%, 70\%, 100\%) and identify where performance saturates.
+    \item \textbf{One multilingual model vs. monolingual models: which works better?}
+    We compare a shared multilingual model trained on all languages against separate models trained per language.
+    \item \textbf{Per-language performance ranking:}
+    We compute and compare evaluation metrics for each language to understand which languages are easier/harder.
+\end{enumerate}
+
+\subsection{Why the problem is challenging}
+\begin{itemize}[itemsep=2pt]
+    \item \textbf{Noisy labels:} star ratings may not perfectly reflect sentiment in the text.
+    \item \textbf{Ordinal target:} 1--5 stars are ordered categories; mistakes are not equally severe (1$\rightarrow$2 vs 1$\rightarrow$5).
+    \item \textbf{Multilingual variability:} languages differ in script, morphology, and tokenization behavior.
+    \item \textbf{Domain shift across categories:} product categories and writing style may vary significantly.
+\end{itemize}
+
+% =========================================================
+% 2. Method
+% =========================================================
+\noindent\rule{\linewidth}{0.4pt}
+\section{Method}
+
+\subsection{Computing resources (Hardware)}
+All experiments were executed on the SDU/University GPU cluster. In the table below are showed the \textit{hardware specification}.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{ll}
+\toprule
+\textbf{Component} & \textbf{Specification} \\
+\midrule
+Compute node & \texttt{u1-gpu-h-1} \\
+CPU & Intel Xeon Gold 6230 (20 vCPUs) \\
+RAM & 46 GB \\
+GPU & 1 $\times$ NVIDIA V100 \\
+OS / Environment & Linux + Conda \\
+\bottomrule
+\end{tabular}
+\caption{Hardware configuration used for model training and evaluation.}
+\label{tab:hardware}
+\end{table}
+
+\subsection{Software stack (Frameworks and tools)}
+We implemented the pipeline in Python using the following libraries:
+\begin{itemize}[itemsep=2pt]
+    \item \textbf{PyTorch}: backend for model training and automatic differentiation.
+    \item \textbf{Hugging Face Transformers}: model loading, tokenization, and the training loop (\texttt{Trainer}).
+    \item \textbf{Hugging Face Datasets}: loading CSV splits and preprocessing with efficient mapping.
+    \item \textbf{Evaluate}: metric computation during evaluation.
+    \item \textbf{Weights \& Biases (wandb)}: experiment tracking (loss curves, metrics, run metadata).
+    \item \textbf{NumPy}: metric utilities and post-processing.
+\end{itemize}
+
+\subsection{Dataset overview}
+We use a multilingual Amazon Reviews dataset split into \texttt{train.csv}, \texttt{validation.csv}, and \texttt{test.csv}.
+Each review includes a 1--5 star rating and textual fields (title/body), along with metadata such as language and product category.
+The dataset covers multiple languages (e.g., EN, ES, DE, FR, JA, ZH).
+
+For the baseline experiments, we subsample the dataset to enable faster experimentation while preserving class balance.
+Specifically, we use up to 1.2M training samples and cap validation and test splits at 30k samples each.
+
+\subsubsection{Label distribution}
+The training split is perfectly balanced across the five star ratings, as shown in Table~\ref{tab:label_distribution_train}.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{cc}
+\toprule
+\textbf{Star rating} & \textbf{Number of samples} \\
+\midrule
+1 & 240{,}000 \\
+2 & 240{,}000 \\
+3 & 240{,}000 \\
+4 & 240{,}000 \\
+5 & 240{,}000 \\
+\bottomrule
+\end{tabular}
+\caption{Label distribution in the training set (balanced).}
+\label{tab:label_distribution_train}
+\end{table}
+
+The validation and test sets follow the same balanced distribution, with 6{,}000 samples per star rating.
+
+\subsubsection{Dataset split sizes}
+Table~\ref{tab:dataset_splits} summarizes the number of samples used in each split.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lcc}
+\toprule
+\textbf{Split} & \textbf{Samples per class} & \textbf{Total samples} \\
+\midrule
+Training & 240{,}000 & 1{,}200{,}000 \\
+Validation & 6{,}000 & 30{,}000 \\
+Test & 6{,}000 & 30{,}000 \\
+\bottomrule
+\end{tabular}
+\caption{Overview of dataset splits used in the experiments.}
+\label{tab:dataset_splits}
+\end{table}
+
+This balanced setup allows a fair comparison between regression and classification approaches
+and ensures that evaluation metrics are not biased by class imbalance.
+
+\subsection{Model choice}
+We use \texttt{distilbert-base-multilingual-cased}, an \textbf{encoder-only} Transformer model.
+It is a distilled variant of multilingual BERT, providing a good trade-off between computational
+efficiency and multilingual coverage \cite{sanh2019distilbert,wolf2020transformers}.\begin{table}[H]
+\centering
+\begin{tabular}{ll}
+\toprule
+\textbf{Feature} & \textbf{Specification} \\
+\midrule
+Model name & \texttt{distilbert-base-multilingual-cased} \\
+Architecture & Encoder-only Transformer (DistilBERT) \\
+Number of layers & 6 Transformer encoder layers \\
+Hidden size & 768 \\
+Attention heads & 12 \\
+Total parameters & $\sim$134 million \\
+Vocabulary size & $\sim$119{,}547 \\
+Maximum sequence length & 512 tokens \\
+Pretraining objective & Masked Language Modeling (MLM) \\
+Languages covered & 100+ languages \\
+Case sensitive & Yes (cased) \\
+Disk size (weights) & $\sim$517 MB \\
+\bottomrule
+\end{tabular}
+\caption{Main characteristics of the \texttt{distilbert-base-multilingual-cased} model \cite{hf_distilbert_multilingual}}
+\label{tab:model_features}
+\end{table}
+
+\subsection{Preprocessing and input representation}
+\paragraph{Column selection.}
+We rename \texttt{review\_body} to \texttt{text} and \texttt{stars} to \texttt{label}, removing non-essential metadata
+(e.g., IDs and product/category fields) for the baseline.
+
+\paragraph{Tokenization.}
+We tokenize the review text with the model tokenizer using truncation and dynamic padding (via \texttt{DataCollatorWithPadding}).
+\todo{Add max\_length used (e.g., 256/512) and any title+body concatenation if enabled.}
+
+\subsection{Training setup (Regression on stars)}
+We model sentiment as a \textbf{regression} problem where the original star rating
+$y \in \{1,2,3,4,5\}$ is normalized to the interval $[0,1]$:
+\[
+y_{\text{norm}} = \frac{y - 1}{4}.
+\]
+During evaluation, predictions are mapped back to the original scale for interpretability:
+\[
+\hat{y} = 4\cdot \hat{y}_{\text{norm}} + 1.
+\]
+
+\paragraph{Loss function.}
+For regression, \texttt{AutoModelForSequenceClassification} uses Mean Squared Error (MSE) by default.
+\todo{If you switch to Huber loss (SmoothL1), mention it here and justify why it is more robust to noisy labels.}
+
+\subsection{Evaluation metrics}
+Evaluation is performed using different metrics depending on whether the task is formulated
+as \textbf{regression} or \textbf{classification}.
+
+\subsubsection{Regression setting.}
+When modeling sentiment as a continuous variable, we report the following metrics:
+\begin{itemize}[itemsep=2pt]
+    \item \textbf{Mean Absolute Error (MAE)} and \textbf{Root Mean Squared Error (RMSE)}, computed in the original 1--5 star scale, to measure average prediction error.
+    \item \textbf{Rounded Accuracy (5-class)}, obtained by rounding the continuous prediction to the nearest integer star rating.
+    \item \textbf{Rounded Accuracy (3-class)}, computed after mapping 1--2$\rightarrow$negative, 3$\rightarrow$neutral, and 4--5$\rightarrow$positive.
+    \item \textbf{Spearman’s rank correlation coefficient ($\rho$)}, to assess how well the model preserves the ordinal ranking of sentiment.
+    \item \textbf{Quadratic Weighted Kappa (QWK)}, which measures ordinal agreement while penalizing larger rating discrepancies more heavily.
+\end{itemize}
+
+\subsubsection{Classification setting.}
+When sentiment prediction is formulated as a classification task, we report:
+\begin{itemize}[itemsep=2pt]
+    \item \textbf{Accuracy (5-class)} and \textbf{Macro F1-score (5-class)}, to evaluate exact label prediction performance across all star ratings.
+    \item \textbf{Quadratic Weighted Kappa (QWK)}, to account for the ordinal structure of the 1--5 star labels.
+    \item \textbf{Accuracy (3-class)} and \textbf{Macro F1-score (3-class)}, computed after mapping ratings to negative, neutral, and positive sentiment.
+\end{itemize}
+
+
+\subsection{Experiment protocol}
+\todo{TODO}
+
+
+% =========================================================
+% 3. Results
+% =========================================================
+\noindent\rule{\linewidth}{0.4pt}
+\section{Results}
+
+\subsection{Baseline results (Regression)}
+Table~\ref{tab:baseline_results} reports the evaluation metrics for our baseline regression run.
+\todo{Replace the example numbers with your final results and specify the split (validation or test).}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lcccccc}
+\toprule
+\textbf{Run} & \textbf{MAE} $\downarrow$ & \textbf{RMSE} $\downarrow$ & \textbf{Acc@5} $\uparrow$ &
+\textbf{Acc@3} $\uparrow$ & \textbf{Spearman} $\uparrow$ & \textbf{QWK} $\uparrow$ \\
+\midrule
+Baseline (example) & 0.53 & 0.72 & 0.59 & 0.77 & 0.84 & 0.85 \\
+\bottomrule
+\end{tabular}
+\caption{Baseline regression results (example values shown). Lower is better for MAE/RMSE; higher is better for the other metrics.}
+\label{tab:baseline_results}
+\end{table}
+
+\subsection{Qualitative inspection}
+\todo{Add 3--5 example reviews with: true stars, predicted stars, and a brief comment on errors (e.g., sarcasm, short text, mixed language).}
+
+\subsection{Planned result visualizations}
+For the full experimental grid, we will present:
+\begin{itemize}[itemsep=2pt]
+    \item a line plot: training size vs performance (one curve per model setup);
+    \item per-language bar charts of QWK/RMSE;
+    \item a confusion matrix for rounded 5-class predictions (optional).
+\end{itemize}
+
+% =========================================================
+% 4. Discussion
+% =========================================================
+\section{Discussion}
+
+\subsection{Key findings}
+Our baseline confirms that a multilingual encoder fine-tuned as a regressor can capture sentiment intensity and ordinal structure.
+In particular, high Spearman and QWK values indicate strong rank preservation and ordinal agreement, even when exact star prediction is imperfect.
+\todo{Rewrite this paragraph using your final numbers and add 1--2 concrete insights.}
+
+\subsection{Interpretation}
+\begin{itemize}[itemsep=2pt]
+    \item \textbf{Ordinal agreement:} QWK highlights that most errors are ``local'' (e.g., off by 1 star rather than 3+).
+    \item \textbf{Cross-lingual behavior:} performance may vary with script and tokenization (Latin vs CJK).
+    \item \textbf{Regression vs classification:} regression leverages the ordered nature of stars, while classification may optimize exact label matches.
+\end{itemize}
+
+\subsection{Limitations}
+\begin{itemize}[itemsep=2pt]
+    \item \textbf{Dataset noise and subjectivity:} stars do not always align with textual sentiment.
+    \item \textbf{Baseline simplicity:} using only review body may miss useful signal from review title or metadata.
+    \item \textbf{Compute constraints:} full multilingual grids are costly; careful sampling strategies are needed.
+\end{itemize}
+
+\subsection{Future work}
+\begin{itemize}[itemsep=2pt]
+    \item Run the full training-size sweep and detect performance plateaus per language.
+    \item Compare multilingual vs monolingual training for each language.
+    \item Explore robust losses (Huber) and/or ordinal regression objectives.
+    \item Add title+body concatenation and test max sequence lengths (256 vs 512).
+\end{itemize}
+
+\subsection{Reflection}
+If starting over, we would:
+\begin{itemize}[itemsep=2pt]
+    \item define a unified checkpoint selection rule early (e.g., best QWK with RMSE tie-breaker);
+    \item standardize splits and sampling per language from the beginning;
+    \item design plots and reporting templates before running the full grid.
+\end{itemize}
+
+% =========================================================
+% 5. Conclusion
+% =========================================================
+\section{Conclusion}
+We presented a baseline pipeline for multilingual sentiment prediction on Amazon Reviews and validated training efficiency on a GPU cluster.
+Using a multilingual DistilBERT encoder, the regression setup achieves strong ordinal agreement (QWK) and rank preservation (Spearman),
+supporting the feasibility of larger-scale cross-lingual experiments.
+Future work will systematically evaluate data requirements per language and compare multilingual vs monolingual training strategies.
+
+% =========================================================
+% References
+% =========================================================
+\clearpage
+\begin{thebibliography}{9}
+
+\bibitem{devlin2019bert}
+Devlin J., Chang M.-W., Lee K., Toutanova K.,
+\textit{BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding},
+\textit{Proceedings of NAACL-HLT}, 2019, pp. 4171--4186.
+
+\bibitem{sanh2019distilbert}
+Sanh V., Debut L., Chaumond J., Wolf T.,
+\textit{DistilBERT, a distilled version of BERT: smaller, faster, cheaper and lighter},
+\textit{arXiv preprint} arXiv:1910.01108, 2019.
+
+\bibitem{wolf2020transformers}
+Wolf T., Debut L., Sanh V., et al.,
+\textit{Transformers: State-of-the-Art Natural Language Processing},
+\textit{Proceedings of EMNLP: System Demonstrations}, 2020, pp. 38--45.
+
+\bibitem{wandb}
+Biewald L.,
+\textit{Experiment Tracking with Weights and Biases},
+\textit{Software available from wandb.com}, 2020.
+
+\bibitem{kaggle_amazon_multilingual}
+Mexwell (Kaggle uploader),
+\textit{Amazon Reviews Multi (Kaggle dataset)},
+\textit{Kaggle}, year unknown.
+\url{https://www.kaggle.com/datasets/mexwell/amazon-reviews-multi/data}
+
+\bibitem{hf_distilbert_multilingual}
+Hugging Face,
+\textit{distilbert-base-multilingual-cased: Model card},
+Hugging Face Model Hub, 2019.
+Available at: \url{https://huggingface.co/distilbert-base-multilingual-cased}
+
+\end{thebibliography}
+
+% =========================================================
+% Appendix A: Reflection with respect to learning objectives
+% =========================================================
+\appendix
+\section{Reflection with respect to learning objectives}
+This project aligns with AI509 learning objectives by requiring:
+\begin{itemize}[itemsep=2pt]
+    \item dataset handling and preprocessing (tokenization, splits, normalization);
+    \item Transformer-based modeling (encoder-only architectures, fine-tuning);
+    \item training and evaluation methodology (losses, metrics, model selection);
+    \item experimental rigor and tracking (reproducibility, W\&B logging);
+    \item interpretation of results and limitations in real-world NLP data.
+\end{itemize}
+\todo{Adapt this to the exact course objectives list from the course description.}
+
+% =========================================================
+% Appendix B: Work tasks distribution
+% =========================================================
+\section{Work tasks distribution}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{p{4cm}p{11cm}}
+\toprule
+\textbf{Member} & \textbf{Main contributions} \\
+\midrule
+Imanshu Sharma & \todo{e.g., dataset exploration, baseline classification runs, plots, report writing} \\
+Alberto Aiello & \todo{e.g., experiment design, multilingual/monolingual comparison, evaluation metrics} \\
+Luca Anzaldi & \todo{e.g., regression setup, metrics (QWK/Spearman), training pipeline, W\&B tracking} \\
+\bottomrule
+\end{tabular}
+\caption{Work distribution (to be finalized).}
+\end{table}
+
+\end{document}

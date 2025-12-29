@@ -10,7 +10,7 @@ from utils import preprocessing
 
 
 # =========  PARAMS =========
-model_name = "models/exp2_regression_300k/checkpoint-12504"
+model_name = "models/exp1_classification_1.2m/checkpoint-28125"
 dataset_path = os.getenv('DATASET_PATH')
 
 # ==================== LOAD DATASET ====================
@@ -20,6 +20,9 @@ amazon_db = load_dataset( 'csv' , data_files={ 'train': dataset_path + '/train.c
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 amazon_db_tokenized = preprocessing(amazon_db , tokenizer , task = 'Classification')
 
+# ===================== DISABLE WANDB =====================
+if "WANDB_API_KEY" in os.environ:
+    del os.environ["WANDB_API_KEY"]
 
 # =========  DEFINE THE METRICS =========
 def qwk_classification(y_true, y_pred, num_classes=None, min_label=None):
@@ -107,6 +110,7 @@ def compute_metrics(eval_pred):
         "accuracy_3": accuracy_3,
         "f1_macro_3": f1_macro_3,
         "qwk_3": qwk_3,
+        "qwk 5": qwk_5,
     }
 
 accuracy = evaluate.load("accuracy")
@@ -118,16 +122,16 @@ model = AutoModelForSequenceClassification.from_pretrained(model_name)
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 
 training_args = TrainingArguments(
-    output_dir="./tmp_eval",
+    output_dir="./tmp_eval",    # Where the model is saved after the revaluation
     per_device_eval_batch_size=128,
+    report_to=None,
 )
 trainer = Trainer(
     model=model,
     args=training_args,
     processing_class=tokenizer,
     eval_dataset=amazon_db_tokenized["test"],
-    compute_metrics=compute_metrics,   
-    report_to=None,
+    compute_metrics=compute_metrics,      
 )
 
 
