@@ -104,7 +104,7 @@ We implemented the pipeline in Python using the following libraries:
 \end{itemize}
 
 \subsection{Dataset overview}
-We use a multilingual Amazon Reviews dataset split into \texttt{train.csv}, \texttt{validation.csv}, and \texttt{test.csv}.
+We use a multilingual Amazon Reviews dataset \cite{kaggle_amazon_multilingual} split into \texttt{train.csv}, \texttt{validation.csv}, and \texttt{test.csv}.
 Each review includes a 1--5 star rating and textual fields (title/body), along with metadata such as language and product category.
 The dataset covers multiple languages (e.g., EN, ES, DE, FR, JA, ZH).
 
@@ -182,28 +182,40 @@ Disk size (weights) & $\sim$517 MB \\
 \end{table}
 
 \subsection{Preprocessing and input representation}
-\paragraph{Column selection.}
-We rename \texttt{review\_body} to \texttt{text} and \texttt{stars} to \texttt{label}, removing non-essential metadata
-(e.g., IDs and product/category fields) for the baseline.
+\paragraph{Column selection.}\label{column-selection}
+We rename \texttt{stars} to \texttt{label} and construct the input text by concatenating the review title and body
+(\texttt{text} = \texttt{review\_title} + \texttt{review\_body}).
+Non-essential metadata (e.g., review IDs, product identifiers, language tags, and product category fields)
+are removed for the baseline experiments.
+
 
 \paragraph{Tokenization.}
-We tokenize the review text with the model tokenizer using truncation and dynamic padding (via \texttt{DataCollatorWithPadding}).
-\todo{Add max\_length used (e.g., 256/512) and any title+body concatenation if enabled.}
+We tokenize the new \texttt{text} column (prodecure on \ref{column-selection}) with the model tokenizer using truncation and dynamic padding (via \texttt{DataCollatorWithPadding}).
 
-\subsection{Training setup (Regression on stars)}
-We model sentiment as a \textbf{regression} problem where the original star rating
-$y \in \{1,2,3,4,5\}$ is normalized to the interval $[0,1]$:
+\paragraph{Label normalization.}
+In the \textit{regression} setting, the original star ratings
+$y \in \{1,2,3,4,5\}$ are linearly normalized to the interval $[0,1]$:
 \[
 y_{\text{norm}} = \frac{y - 1}{4}.
 \]
-During evaluation, predictions are mapped back to the original scale for interpretability:
+For evaluation and interpretability, model predictions are mapped back to the original
+rating scale using the inverse transformation:
 \[
-\hat{y} = 4\cdot \hat{y}_{\text{norm}} + 1.
+\hat{y} = 4 \cdot \hat{y}_{\text{norm}} + 1.
 \]
 
-\paragraph{Loss function.}
-For regression, \texttt{AutoModelForSequenceClassification} uses Mean Squared Error (MSE) by default.
-\todo{If you switch to Huber loss (SmoothL1), mention it here and justify why it is more robust to noisy labels.}
+In the \textit{classification setting}, star ratings are re-encoded from the original range
+$\{1,\dots,5\}$ to $\{0,\dots,4\}$, in accordance with the Hugging Face
+\texttt{Transformers} framework, which requires class labels to be zero-indexed.
+
+\subsection{Training setup}
+Training is performed using task-specific loss functions.
+For the \textit{regression formulation}, we minimize the \textbf{Mean Squared Error (MSE)} loss between
+predicted and ground-truth star ratings.
+For the \textit{classification formulation}, we optimize the \textbf{categorical cross-entropy} loss,
+as standard for multi-class classification in the Hugging Face \texttt{Transformers} framework.
+
+\todo{Add a table with epochs , batch size , learning rate , ecc}
 
 \subsection{Evaluation metrics}
 Evaluation is performed using different metrics depending on whether the task is formulated
@@ -229,7 +241,16 @@ When sentiment prediction is formulated as a classification task, we report:
 
 
 \subsection{Experiment protocol}
-\todo{TODO}
+
+\subsubsection{Regression vs Classification}
+Talk about the first experiment was to understand which kind of training we want to do for the following question
+\todo{TODO : LUCA}
+\subsubsection{How much target-language data is needed}
+\todo{TODO : LUCA}
+\subsubsection{One multilingual model vs. monolingual models}
+\todo{HIMANSHU or ALBERTO}
+\subsubsection{Per-language performance ranking}
+\todo{HIMANSHU or ALBERTO}
 
 
 % =========================================================
@@ -238,34 +259,7 @@ When sentiment prediction is formulated as a classification task, we report:
 \noindent\rule{\linewidth}{0.4pt}
 \section{Results}
 
-\subsection{Baseline results (Regression)}
-Table~\ref{tab:baseline_results} reports the evaluation metrics for our baseline regression run.
-\todo{Replace the example numbers with your final results and specify the split (validation or test).}
-
-\begin{table}[H]
-\centering
-\begin{tabular}{lcccccc}
-\toprule
-\textbf{Run} & \textbf{MAE} $\downarrow$ & \textbf{RMSE} $\downarrow$ & \textbf{Acc@5} $\uparrow$ &
-\textbf{Acc@3} $\uparrow$ & \textbf{Spearman} $\uparrow$ & \textbf{QWK} $\uparrow$ \\
-\midrule
-Baseline (example) & 0.53 & 0.72 & 0.59 & 0.77 & 0.84 & 0.85 \\
-\bottomrule
-\end{tabular}
-\caption{Baseline regression results (example values shown). Lower is better for MAE/RMSE; higher is better for the other metrics.}
-\label{tab:baseline_results}
-\end{table}
-
-\subsection{Qualitative inspection}
-\todo{Add 3--5 example reviews with: true stars, predicted stars, and a brief comment on errors (e.g., sarcasm, short text, mixed language).}
-
-\subsection{Planned result visualizations}
-For the full experimental grid, we will present:
-\begin{itemize}[itemsep=2pt]
-    \item a line plot: training size vs performance (one curve per model setup);
-    \item per-language bar charts of QWK/RMSE;
-    \item a confusion matrix for rounded 5-class predictions (optional).
-\end{itemize}
+\todo{TODO}
 
 % =========================================================
 % 4. Discussion
@@ -391,3 +385,4 @@ Luca Anzaldi & \todo{e.g., regression setup, metrics (QWK/Spearman), training pi
 \end{table}
 
 \end{document}
+
