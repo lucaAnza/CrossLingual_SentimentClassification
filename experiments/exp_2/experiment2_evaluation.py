@@ -4,40 +4,22 @@ import os
 from dotenv import load_dotenv
 from datasets import load_dataset, Value
 import numpy as np
+import evaluate
 load_dotenv()  # loads .env 
+from utils import preprocessing
 
 
 # =========  PARAMS =========
-run_name = "models/exp2_regression_300k/checkpoint-12504"
+model_name = "models/exp2_regression_1.2m/checkpoint-37500"
 dataset_path = os.getenv('DATASET_PATH')
 
 # ==================== LOAD DATASET ====================
 amazon_db = load_dataset( 'csv' , data_files={ 'train': dataset_path + '/train.csv', 'test': dataset_path + '/test.csv'  , 'validation': dataset_path + '/validation.csv' } )
 
 # ==================== PREPROCESSING ====================
-# Reduce dataset size for faster experimentation 
-k = 200000
-amazon_db['train'] = amazon_db['train'].shuffle(seed=42).select(range(k))
-amazon_db['test'] = amazon_db['test'].shuffle(seed=42).select(range(min(30000 , k//6)))
-amazon_db['validation'] = amazon_db['validation'].shuffle(seed=42).select(range(min(30000 , k//6)))
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+amazon_db_tokenized = preprocessing(amazon_db , tokenizer , task = 'Regression')
 
-# Rename columns and remove unnecessary ones
-amazon_db = amazon_db.rename_column("stars", "label")
-amazon_db = amazon_db.rename_column("review_body", "text")
-amazon_db = amazon_db.remove_columns(["Unnamed: 0", 'review_id', 'product_id', 'reviewer_id', 'review_title', 'language', 'product_category'])  # Remove unnecessary index column
-amazon_db = amazon_db.cast_column("label", Value("float32"))  # regression needs continuous labels
-
-# Tokenization
-# Add ids column + mask column
-def preprocess_function(examples):
-    return tokenizer(examples["text"], truncation=True) # TODO : Instead of use review_body alone use also review_title
-
-tokenizer = AutoTokenizer.from_pretrained(run_name)
-amazon_db_tokenized = amazon_db.map(preprocess_function, batched=True) # features: ['text', 'label' , 'ids' , 'mask']  (batched=True for speed up the mapping process)
-
-# Data collator
-data_collator = DataCollatorWithPadding(tokenizer=tokenizer) # Defines how batches are created during training (uses dynamic padding)
-print("\n✅ Preprocessing completed. Db struct : " , amazon_db_tokenized)
 
 
 
@@ -92,6 +74,7 @@ def qwk(y_true, y_pred, min_rating=1, max_rating=5):
     den = (W * E).sum()
     return float(1.0 - num / den) if den != 0 else 0.0
 
+f1_metric = evaluate.load("f1")
 
 def compute_metrics(eval_pred):
     predictions, labels = eval_pred
@@ -120,6 +103,22 @@ def compute_metrics(eval_pred):
     labels_3 = bin3_stars(labels_star)
     rounded_accuracy_3 = np.mean(preds_3 == labels_3)
 
+    # ---- F1 metrics (macro) ----
+    f1_5 = f1_metric.compute(
+        predictions=preds_star.tolist(),
+        references=labels_star.tolist(),
+        average="macro",
+        labels=[1, 2, 3, 4, 5],
+    )["f1"]
+
+    classes_3 = sorted(set(labels_3.tolist()) | set(preds_3.tolist()))
+    f1_3 = f1_metric.compute(
+        predictions=preds_3.tolist(),
+        references=labels_3.tolist(),
+        average="macro",
+        labels=classes_3,
+    )["f1"]
+
     # ---- Ordinal metrics ----
     spearmanr = spearman_corr(preds, labels)          # on continuous (1..5 floats)
     qwk_score = qwk(labels_star, preds_star, 1, 5)    # on rounded stars (1..5 ints)
@@ -131,12 +130,15 @@ def compute_metrics(eval_pred):
         "rounded_accuracy_3": float(rounded_accuracy_3),
         "spearmanr": float(spearmanr),
         "qwk": float(qwk_score),
+        "f1_5": float(f1_5),
+        "f1_3": float(f1_3),
     }
 
 
 # =========  LOAD THE MODEL =========
-model = AutoModelForSequenceClassification.from_pretrained(run_name)
-tokenizer = AutoTokenizer.from_pretrained(run_name)
+data_collator = DataCollatorWithPadding(tokenizer=tokenizer) # dynamically padding for token list (so we can batch different length inputs) [used in training]
+model = AutoModelForSequenceClassification.from_pretrained(model_name)
+
 
 training_args = TrainingArguments(
     output_dir="./tmp_eval",
