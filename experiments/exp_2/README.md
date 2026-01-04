@@ -113,5 +113,26 @@ These results confirm that the model learns **relative sentiment intensity**, no
 
 ![alt text](../../src/all_metrics_regression_comparison.png)
 
+### Inference results
+
+```text
+📝 Review: VALID : This product is very valid, i suggest this to everyone
+➡️ Regression score normalized: 4.8326
+⭐ Predicted stars using rounding: 5/5
+
+📝 Review: NOT VALID : Pls don't buy this product is a scam
+➡️ Regression score normalized: 1.0073
+⭐ Predicted stars using rounding: 1/5
+
+📝 Review: IT OKS : This product has a nice cost/quality rate even if is not the best one
+➡️ Regression score normalized: 3.6817
+⭐ Predicted stars using rounding: 4/5
+
+📝 Review: DISSAPOINTED : This product is not good. I could say that is accetable only because is very cheap.
+➡️ Regression score normalized: 1.2715
+⭐ Predicted stars using rounding: 1/5
+```
+
+---
 
 

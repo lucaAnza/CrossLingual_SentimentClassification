@@ -98,6 +98,26 @@ At epoch **3**, the model achieves the following validation performance:
 
 These results show that the model successfully learns high-level sentiment distinctions, particularly when collapsing labels into three sentiment polarities.
 
+### Inference results
+
+```text
+📝 Review: VALID : This product is very valid, i suggest this to everyone
+⭐ Predicted stars: 5/5
+✅ Confidence (softmax probability predicted class): 0.6607
+
+📝 Review: NOT VALID : Pls don't buy this product is a scam
+⭐ Predicted stars: 1/5
+✅ Confidence (softmax probability predicted class): 0.9855
+
+📝 Review: IT OKS : This product has a nice cost/quality rate even if is not the best one
+⭐ Predicted stars: 3/5
+✅ Confidence (softmax probability predicted class): 0.4741
+
+📝 Review: DISSAPOINTED : This product is not good. I could say that is accetable only because is very cheap.
+⭐ Predicted stars: 1/5
+✅ Confidence (softmax probability predicted class): 0.8004
+```
+
 ---
 
 ## Discussion and possible improvement
