@@ -6,7 +6,7 @@ from datasets import load_dataset
 import evaluate
 import numpy as np
 import wandb
-from transformers import AutoTokenizer , DataCollatorWithPadding
+from transformers import AutoTokenizer, EarlyStoppingCallback , DataCollatorWithPadding
 from transformers import AutoModelForSequenceClassification, TrainingArguments, Trainer
 import torch
 from utils import preprocessing
@@ -59,8 +59,10 @@ def bin3_array(x):
         np.where(x == 2, 1, 2)
     )
 
-# Logist = [0.1, 0.5, 0.2, 0.1, 0.1] → class with max probability
-# labels = [0,1,2,3,4]
+# Example:
+# logits :  [[ 3.598274   2.2076087 -0.9162292 -4.189072  -5.289907 ]]
+# labels :  [1]
+# preds : 0
 def compute_metrics(eval_pred):
     logits, labels = eval_pred
     preds = np.argmax(logits, axis=1)

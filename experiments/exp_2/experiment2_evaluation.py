@@ -18,7 +18,7 @@ amazon_db = load_dataset( 'csv' , data_files={ 'train': dataset_path + '/train.c
 
 # ==================== PREPROCESSING ====================
 tokenizer = AutoTokenizer.from_pretrained(model_name)
-amazon_db_tokenized = preprocessing(amazon_db , tokenizer , task = 'Regression')
+amazon_db_tokenized = preprocessing(amazon_db , tokenizer , task = 'Regression' , k = 10)
 
 
 
@@ -76,6 +76,10 @@ def qwk(y_true, y_pred, min_rating=1, max_rating=5):
 
 f1_metric = evaluate.load("f1")
 
+# EXAMPLE
+## predictions :  [[0.08773001]]   # value from 0 -> 1
+## labels :  [0.25]       # 0.00 = ★ ;  # 0.25 = ★★ ; ...
+## preds :  [0.08773001]
 def compute_metrics(eval_pred):
     predictions, labels = eval_pred
 
@@ -138,6 +142,7 @@ def compute_metrics(eval_pred):
 # =========  LOAD THE MODEL =========
 data_collator = DataCollatorWithPadding(tokenizer=tokenizer) # dynamically padding for token list (so we can batch different length inputs) [used in training]
 model = AutoModelForSequenceClassification.from_pretrained(model_name)
+tokenizer = AutoTokenizer.from_pretrained(model_name)
 
 
 training_args = TrainingArguments(
