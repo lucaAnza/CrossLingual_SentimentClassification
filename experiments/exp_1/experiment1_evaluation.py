@@ -18,13 +18,34 @@ amazon_db = load_dataset( 'csv' , data_files={ 'train': dataset_path + '/train.c
 
 # ==================== PREPROCESSING ====================
 tokenizer = AutoTokenizer.from_pretrained(model_name)
-amazon_db_tokenized = preprocessing(amazon_db , tokenizer , task = 'Classification' , k = 10)
+amazon_db_tokenized = preprocessing(amazon_db , tokenizer , task = 'Classification')
 
 # ===================== DISABLE WANDB =====================
 if "WANDB_API_KEY" in os.environ:
     del os.environ["WANDB_API_KEY"]
 
 # =========  DEFINE THE METRICS =========
+def spearman_corr(a, b):
+    """Spearman correlation without scipy: rank then Pearson."""
+    a = np.asarray(a)
+    b = np.asarray(b)
+
+    ra = a.argsort().argsort().astype(np.float64)
+    rb = b.argsort().argsort().astype(np.float64)
+
+    ra -= ra.mean()
+    rb -= rb.mean()
+
+    denom = np.sqrt((ra**2).sum()) * np.sqrt((rb**2).sum())
+    return float((ra * rb).sum() / denom) if denom != 0 else 0.0
+
+def softmax_np(x):
+    """Stable softmax for (N, C) logits."""
+    x = np.asarray(x, dtype=np.float64)
+    x = x - np.max(x, axis=1, keepdims=True)
+    ex = np.exp(x)
+    return ex / np.sum(ex, axis=1, keepdims=True)
+
 def qwk_classification(y_true, y_pred, num_classes=None, min_label=None):
     """
     Quadratic Weighted Kappa for ORDINAL classification.
@@ -97,6 +118,15 @@ def compute_metrics(eval_pred):
     # QWK 5-class 
     qwk_5 = qwk_classification(labels, preds, num_classes=5, min_label=0)
 
+    # ----- Spearman (classification) -----
+    # Option A: use argmax predictions (many ties -> sometimes less informative)
+    spearman_argmax = spearman_corr(preds, labels)
+
+    # Option B (recommended): expected rating from probabilities (fewer ties)
+    probs = softmax_np(logits)                         # (N, 5)
+    expected = (probs * np.arange(5)).sum(axis=1)      # values in [0,4]
+    spearman_expected = spearman_corr(expected, labels)
+
     # ----- 3-class metrics -----
     labels_3 = bin3_array(labels)
     preds_3 = bin3_array(preds)
@@ -113,7 +143,9 @@ def compute_metrics(eval_pred):
         "accuracy_3": accuracy_3,
         "f1_macro_3": f1_macro_3,
         "qwk_3": qwk_3,
-        "qwk 5": qwk_5,
+        "spearman_argmax": float(spearman_argmax),
+        "spearman_expected": float(spearman_expected),
+        "qwk_5": qwk_5,
     }
 
 accuracy = evaluate.load("accuracy")

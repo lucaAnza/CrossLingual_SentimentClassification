@@ -9,10 +9,12 @@
 \usepackage{amsmath}
 \usepackage{enumitem}
 \usepackage{xcolor}
+\usepackage{colortbl}
 \usepackage{caption}
 \usepackage{subcaption}
 \usepackage{float}
 \usepackage{todonotes}
+\definecolor{lightgreen}{RGB}{220,245,220}  % Used for table highlights
 
 % ---------- Title ----------
 \title{\textbf{Sentiment Analysis of Multilingual Amazon Reviews}\\
@@ -69,6 +71,7 @@ Our project investigates the following questions:
 % =========================================================
 % 2. Method
 % =========================================================
+\newpage
 \noindent\rule{\linewidth}{0.4pt}
 \section{Method}
 
@@ -208,6 +211,8 @@ In the \textit{classification setting}, star ratings are re-encoded from the ori
 $\{1,\dots,5\}$ to $\{0,\dots,4\}$, in accordance with the Hugging Face
 \texttt{Transformers} framework, which requires class labels to be zero-indexed.
 
+
+%%% TRAINING SETUP
 \subsection{Training setup}
 Training is performed using task-specific loss functions.
 For the \textit{regression formulation}, we minimize the \textbf{Mean Squared Error (MSE)} loss between
@@ -215,7 +220,38 @@ predicted and ground-truth star ratings.
 For the \textit{classification formulation}, we optimize the \textbf{categorical cross-entropy} loss,
 as standard for multi-class classification in the Hugging Face \texttt{Transformers} framework.
 
-\todo{Add a table with epochs , batch size , learning rate , ecc}
+%Table with settings
+\begin{table}[H]
+\centering
+\begin{tabular}{lc}
+\toprule
+\textbf{Hyperparameter} & \textbf{Value} \\
+\midrule
+Training batch size & 32 \\
+Gradient accumulation steps & 4 \\
+Effective batch size & 128 \\
+Number of epochs & 8 \\
+Weight decay & 0.01 \\
+Learning rate scheduler & Cosine \\
+Warmup ratio & 0.06 \\
+Maximum gradient norm & 1.0 \\
+\bottomrule
+\end{tabular}
+\caption{Key training hyperparameters used in the experiments.}
+\label{tab:training_hyperparameters}
+\end{table}
+
+% Hyperparams motivation
+\paragraph{Hyperparameter selection.}
+\begin{itemize}[itemsep=2pt]
+    \item The training batch size was set to 32 to ensure stable optimization while avoiding GPU memory constraints.
+    \item Gradient accumulation with four steps was used to simulate a larger effective batch size of 128 without increasing memory usage.
+    \item The model was trained for eight epochs to allow sufficient convergence while limiting the risk of overfitting.
+    \item Weight decay was applied to regularize model parameters and mitigate overfitting on noisy sentiment labels.
+    \item A cosine learning rate scheduler with a warmup ratio of 0.06 was adopted to ensure smooth learning rate decay and stable early training.
+    \item Gradient clipping with a maximum norm of 1.0 was employed to prevent exploding gradients and improve overall training stability.
+\end{itemize}
+
 
 \subsection{Evaluation metrics}
 Evaluation is performed using different metrics depending on whether the task is formulated
@@ -243,10 +279,24 @@ When sentiment prediction is formulated as a classification task, we report:
 \subsection{Experiment protocol}
 
 \subsubsection{Regression vs Classification}
-Talk about the first experiment was to understand which kind of training we want to do for the following question
-\todo{TODO : LUCA}
+The first set of experiments was designed to assess whether sentiment prediction should be
+formulated as a \textit{regression} or a \textit{classification} problem.
+Since the Amazon review ratings are ordinal in nature, both approaches are viable:
+classification treats each star rating as a discrete category, while regression models
+sentiment as a continuous variable that preserves the ordering between ratings.
+
 \subsubsection{How much target-language data is needed}
-\todo{TODO : LUCA}
+To investigate how model performance scales with the amount of target-language data,
+we trained the regression model using progressively larger subsets of the training set,
+namely 100k, 200k, 600k, and 1.2M samples.
+
+This experiment aims to identify potential performance plateaus, i.e., points beyond which
+adding more training data yields diminishing returns.
+Understanding this behavior is essential to balance predictive performance and computational
+cost, and to inform the choice of dataset size for subsequent experiments.
+In particular, detecting an early plateau allows us to reduce training time and resource
+usage while maintaining competitive performance in later cross-lingual analyses.
+
 \subsubsection{One multilingual model vs. monolingual models}
 \todo{HIMANSHU or ALBERTO}
 \subsubsection{Per-language performance ranking}
@@ -256,54 +306,185 @@ Talk about the first experiment was to understand which kind of training we want
 % =========================================================
 % 3. Results
 % =========================================================
+\newpage
 \noindent\rule{\linewidth}{0.4pt}
 \section{Results}
 
-\todo{TODO}
+\subsubsection{Regression vs Classification}
+
+Table~\ref{tab:regressionVSclassification} shows that the overall performance of the regression and classification approaches is very similar across most evaluation metrics. In particular, metrics that capture ordinal consistency and ranking quality, such as Quadratic Weighted Kappa (QWK) and Spearman correlation, exhibit only marginal differences between the two settings.
+
+These similarities are also reflected during inference, where both models generally predict comparable star ratings for clearly positive or negative reviews. However, regression achieves slightly higher QWK and Spearman scores, suggesting a better preservation of the ordinal structure of the rating scale.
+
+For this reason, despite the comparable classification-oriented metrics (Accuracy and F1), we ultimately chose the regression formulation. This choice is motivated by its ability to produce continuous scores that better capture sentiment intensity and reduce the impact of small ordinal errors (e.g., predicting 4 instead of 5 stars), which are penalized less severely by ordinal metrics.
+
+\begin{table}[H]
+\label{tab:regressionVSclassification}
+\centering
+\rowcolors{2}{white}{white}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Metric} & \textbf{Regression} & \textbf{Classification} \\
+\midrule
+Dataset size &
+1.2M &
+1.2M \\
+
+MAE $\downarrow$ &
+\cellcolor{lightgreen}0.508 &
+-- \\
+
+RMSE $\downarrow$ &
+\cellcolor{lightgreen}0.692 &
+-- \\
+
+QWK $\uparrow$ &
+\cellcolor{lightgreen}0.854 &
+0.853 \\
+
+Spearman $\uparrow$ &
+\cellcolor{lightgreen}0.855 &
+0.854 \\
+
+F1 (5-class) $\uparrow$ &
+0.740 &
+\cellcolor{lightgreen}0.614 \\
+
+F1 (3-class) $\uparrow$ &
+0.603 &
+\cellcolor{lightgreen}0.746 \\
+
+Accuracy (5-class) $\uparrow$ &
+0.596 &
+\cellcolor{lightgreen}0.616 \\
+
+Accuracy (3-class) $\uparrow$ &
+0.784 &
+\cellcolor{lightgreen}0.792 \\
+
+\bottomrule
+\end{tabular}
+\caption{Comparison between regression and classification}
+\label{tab:regression_vs_classification}
+\end{table}
+
+\subsubsection{Qualitative Comparison}
+
+The following examples illustrate the behavior of the two approaches at inference time.
+
+\paragraph{Regression}
+\begin{itemize}
+\item \textbf{Review: VALID} — ``This product is very valid, I suggest this to everyone'' \
+Predicted score (normalized): 4.83 \
+Predicted stars (rounded): 5/5
+
+\item \textbf{Review: NOT VALID} — ``Pls don't buy this product, it is a scam'' \
+Predicted score (normalized): 1.01 \
+Predicted stars (rounded): 1/5
+
+\item \textbf{Review: IT OKS} — ``This product has a nice cost/quality rate even if it is not the best one'' \
+Predicted score (normalized): 3.68 \
+Predicted stars (rounded): 4/5
+
+\item \textbf{Review: DISSAPOINTED} — ``This product is not good. I could say that it is acceptable only because it is very cheap.'' \
+Predicted score (normalized): 1.27 \
+Predicted stars (rounded): 1/5
+\end{itemize}
+
+\paragraph{Classification}
+\begin{itemize}
+\item \textbf{Review: VALID} \
+Predicted stars: 5/5 \
+Confidence (softmax): 0.66
+
+\item \textbf{Review: NOT VALID} \
+Predicted stars: 1/5 \
+Confidence (softmax): 0.99
+
+\item \textbf{Review: IT OKS} \
+Predicted stars: 3/5 \
+Confidence (softmax): 0.47
+
+\item \textbf{Review: DISSAPOINTED} \
+Predicted stars: 1/5 \
+Confidence (softmax): 0.80
+\end{itemize}
+
+These examples highlight how regression naturally captures intermediate sentiment levels (e.g., borderline positive reviews), while classification tends to force discrete decisions even when confidence is relatively low.
+
+\subsubsection{Results about dataset size}
+
+From Table~\ref{tab}, a consistent improvement across all metrics can be observed as the dataset size increases. No clear performance plateau is reached within the explored range, indicating that reducing the dataset size leads to faster training but inevitably results in a loss of predictive quality.
+
+\begin{table}[H]
+\centering
+\rowcolors{2}{white}{white}
+\begin{tabular}{lcccccc}
+\toprule
+\textbf{Dataset size} & \textbf{Epochs} & \textbf{MAE $\downarrow$} & \textbf{RMSE $\downarrow$} & \textbf{QWK $\uparrow$} & \textbf{Acc (5) $\uparrow$} & \textbf{Acc (3) $\uparrow$} \\
+\midrule
+100k   & 4 & 0.600 & 0.791 & 0.813 & 0.527 & 0.743 \\
+200k   & 5 & 0.554 & 0.754 & 0.835 & 0.568 & 0.766 \\
+600k   & 4 & 0.526 & 0.710 & 0.848 & 0.585 & 0.778 \\
+1.2M   & 4 & \cellcolor{lightgreen}0.508 & \cellcolor{lightgreen}0.692 & \cellcolor{lightgreen}0.854 & \cellcolor{lightgreen}0.596 & \cellcolor{lightgreen}0.784 \\
+\bottomrule
+\end{tabular}
+\caption{Impact of dataset size on regression performance}
+\label{tab:best_dataset_size}
+\end{table}
+
+Moreover, the best values for all major metrics are already achieved between 4 and 5 epochs. Extending training beyond this range does not provide additional benefits and may increase the risk of overfitting while unnecessarily increasing computational cost. For this reason, early stopping around 4 epochs is recommended, rather than training up to 8 epochs.
+\todo{cite the img}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{epoch_comparison.png}
+    \caption{Epoch related to the dataset size}
+    \label{fig:placeholder}
+\end{figure}
+
+Overall, these results suggest a trade-off between efficiency and performance: smaller datasets significantly reduce training time but degrade ordinal consistency and accuracy, while larger datasets continue to yield measurable gains without exhibiting saturation.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{qwk_regression.png}
+    \caption{QWK metrics}
+    \label{fig:placeholder}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{spearmanr_regression.png}
+    \caption{Spearman metrics}
+    \label{fig:placeholder}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{rmse_regression.png}
+    \caption{RMSE metrics}
+    \label{fig:placeholder}
+\end{figure}
+
+
+
+
 
 % =========================================================
 % 4. Discussion
 % =========================================================
+\newpage
 \section{Discussion}
 
 \subsection{Key findings}
-Our baseline confirms that a multilingual encoder fine-tuned as a regressor can capture sentiment intensity and ordinal structure.
-In particular, high Spearman and QWK values indicate strong rank preservation and ordinal agreement, even when exact star prediction is imperfect.
-\todo{Rewrite this paragraph using your final numbers and add 1--2 concrete insights.}
+Our baseline confirms that a multilingual encoder fine-tuned as a regressor can capture sentiment intensity and ordinal structure... 
+\todo{Finish this chapter using the result of question2 and question3}
 
-\subsection{Interpretation}
-\begin{itemize}[itemsep=2pt]
-    \item \textbf{Ordinal agreement:} QWK highlights that most errors are ``local'' (e.g., off by 1 star rather than 3+).
-    \item \textbf{Cross-lingual behavior:} performance may vary with script and tokenization (Latin vs CJK).
-    \item \textbf{Regression vs classification:} regression leverages the ordered nature of stars, while classification may optimize exact label matches.
-\end{itemize}
-
-\subsection{Limitations}
-\begin{itemize}[itemsep=2pt]
-    \item \textbf{Dataset noise and subjectivity:} stars do not always align with textual sentiment.
-    \item \textbf{Baseline simplicity:} using only review body may miss useful signal from review title or metadata.
-    \item \textbf{Compute constraints:} full multilingual grids are costly; careful sampling strategies are needed.
-\end{itemize}
-
-\subsection{Future work}
-\begin{itemize}[itemsep=2pt]
-    \item Run the full training-size sweep and detect performance plateaus per language.
-    \item Compare multilingual vs monolingual training for each language.
-    \item Explore robust losses (Huber) and/or ordinal regression objectives.
-    \item Add title+body concatenation and test max sequence lengths (256 vs 512).
-\end{itemize}
-
-\subsection{Reflection}
-If starting over, we would:
-\begin{itemize}[itemsep=2pt]
-    \item define a unified checkpoint selection rule early (e.g., best QWK with RMSE tie-breaker);
-    \item standardize splits and sampling per language from the beginning;
-    \item design plots and reporting templates before running the full grid.
-\end{itemize}
 
 % =========================================================
 % 5. Conclusion
 % =========================================================
+\newpage
 \section{Conclusion}
 We presented a baseline pipeline for multilingual sentiment prediction on Amazon Reviews and validated training efficiency on a GPU cluster.
 Using a multilingual DistilBERT encoder, the regression setup achieves strong ordinal agreement (QWK) and rank preservation (Spearman),
@@ -385,4 +566,3 @@ Luca Anzaldi & \todo{e.g., regression setup, metrics (QWK/Spearman), training pi
 \end{table}
 
 \end{document}
-

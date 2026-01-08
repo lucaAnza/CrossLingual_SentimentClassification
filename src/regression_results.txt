@@ -43,6 +43,8 @@
     "eval_mae": 0.5080955028533936,
     "eval_qwk": 0.8544406756195486,
     "eval_rmse": 0.6922860741615295,
+    "eval_f1_3" : 0,6031,	
+    "eval_f1_5" : 0,74,
     "eval_rounded_accuracy": 0.5959,
     "eval_rounded_accuracy_3": 0.7840666666666667,
     "eval_runtime": 63.2388,
