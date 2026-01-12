@@ -312,14 +312,13 @@ usage while maintaining competitive performance in later cross-lingual analyses.
 
 \subsubsection{Regression vs Classification}
 
-Table~\ref{tab:regressionVSclassification} shows that the overall performance of the regression and classification approaches is very similar across most evaluation metrics. In particular, metrics that capture ordinal consistency and ranking quality, such as Quadratic Weighted Kappa (QWK) and Spearman correlation, exhibit only marginal differences between the two settings.
+Table~\ref{tab:regression_vs_classification} shows that the overall performance of the regression and classification approaches is very similar across most evaluation metrics. In particular, metrics that capture ordinal consistency and ranking quality, such as Quadratic Weighted Kappa (QWK) and Spearman correlation, exhibit only marginal differences between the two settings.
 
 These similarities are also reflected during inference, where both models generally predict comparable star ratings for clearly positive or negative reviews. However, regression achieves slightly higher QWK and Spearman scores, suggesting a better preservation of the ordinal structure of the rating scale.
 
 For this reason, despite the comparable classification-oriented metrics (Accuracy and F1), we ultimately chose the regression formulation. This choice is motivated by its ability to produce continuous scores that better capture sentiment intensity and reduce the impact of small ordinal errors (e.g., predicting 4 instead of 5 stars), which are penalized less severely by ordinal metrics.
 
 \begin{table}[H]
-\label{tab:regressionVSclassification}
 \centering
 \rowcolors{2}{white}{white}
 \begin{tabular}{lcc}
@@ -414,7 +413,7 @@ These examples highlight how regression naturally captures intermediate sentimen
 
 \subsubsection{Results about dataset size}
 
-From Table~\ref{tab}, a consistent improvement across all metrics can be observed as the dataset size increases. No clear performance plateau is reached within the explored range, indicating that reducing the dataset size leads to faster training but inevitably results in a loss of predictive quality.
+From Table~\ref{tab:best_dataset_size}, a consistent improvement across all metrics can be observed as the dataset size increases. No clear performance plateau is reached within the explored range, indicating that reducing the dataset size leads to faster training but inevitably results in a loss of predictive quality.
 
 \begin{table}[H]
 \centering
@@ -433,35 +432,34 @@ From Table~\ref{tab}, a consistent improvement across all metrics can be observe
 \label{tab:best_dataset_size}
 \end{table}
 
-Moreover, the best values for all major metrics are already achieved between 4 and 5 epochs. Extending training beyond this range does not provide additional benefits and may increase the risk of overfitting while unnecessarily increasing computational cost. For this reason, early stopping around 4 epochs is recommended, rather than training up to 8 epochs.
-\todo{cite the img}
+Moreover, the best values for all major metrics are already achieved between 4 and 5 epochs. Extending training beyond this range does not provide additional benefits and may increase the risk of overfitting while unnecessarily increasing computational cost. For this reason, early stopping around 4 epochs is recommended, rather than training up to 8 epochs (Figure \ref{fig:epoch_comparison}).
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\linewidth]{epoch_comparison.png}
     \caption{Epoch related to the dataset size}
-    \label{fig:placeholder}
+    \label{fig:epoch_comparison}
 \end{figure}
 
 Overall, these results suggest a trade-off between efficiency and performance: smaller datasets significantly reduce training time but degrade ordinal consistency and accuracy, while larger datasets continue to yield measurable gains without exhibiting saturation.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\linewidth]{qwk_regression.png}
+    \includegraphics[width=0.7\linewidth]{qwk_regression.png}
     \caption{QWK metrics}
     \label{fig:placeholder}
 \end{figure}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\linewidth]{spearmanr_regression.png}
+    \includegraphics[width=0.7\linewidth]{spearmanr_regression.png}
     \caption{Spearman metrics}
     \label{fig:placeholder}
 \end{figure}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\linewidth]{rmse_regression.png}
+    \includegraphics[width=0.7\linewidth]{rmse_regression.png}
     \caption{RMSE metrics}
     \label{fig:placeholder}
 \end{figure}
@@ -536,15 +534,15 @@ Available at: \url{https://huggingface.co/distilbert-base-multilingual-cased}
 % =========================================================
 \appendix
 \section{Reflection with respect to learning objectives}
-This project aligns with AI509 learning objectives by requiring:
+This project aligns with the course learning objectives by requiring:
 \begin{itemize}[itemsep=2pt]
-    \item dataset handling and preprocessing (tokenization, splits, normalization);
-    \item Transformer-based modeling (encoder-only architectures, fine-tuning);
-    \item training and evaluation methodology (losses, metrics, model selection);
-    \item experimental rigor and tracking (reproducibility, W\&B logging);
-    \item interpretation of results and limitations in real-world NLP data.
+    \item Understanding and application of core NLP building blocks, including tokenization, embeddings, and Transformer architectures (attention mechanisms) as the foundation of modern language understanding systems;
+    \item Implementation and fine-tuning of pre-trained language models (e.g., with Hugging Face and/or PyTorch) to solve practical NLP tasks such as text classification and sentiment analysis (and, where applicable, sequence-to-sequence tasks like translation);
+    \item Comparison of alternative modeling choices by analyzing evaluation metrics and qualitative outputs, assessing their effectiveness for language modeling and sequence generation behavior where relevant;
+    \item Critical assessment of strengths and limitations of different NLP approaches, considering model capacity, scalability, computational cost, and robustness to real-world, domain-specific language variation;
+    \item Development of an end-to-end, scalable NLP solution that integrates preprocessing, embeddings, and advanced architectures, with attention to deployment considerations and reproducible experimentation.
 \end{itemize}
-\todo{Adapt this to the exact course objectives list from the course description.}
+
 
 % =========================================================
 % Appendix B: Work tasks distribution
@@ -557,12 +555,13 @@ This project aligns with AI509 learning objectives by requiring:
 \toprule
 \textbf{Member} & \textbf{Main contributions} \\
 \midrule
-Imanshu Sharma & \todo{e.g., dataset exploration, baseline classification runs, plots, report writing} \\
-Alberto Aiello & \todo{e.g., experiment design, multilingual/monolingual comparison, evaluation metrics} \\
-Luca Anzaldi & \todo{e.g., regression setup, metrics (QWK/Spearman), training pipeline, W\&B tracking} \\
+Imanshu Sharma & TODO \\
+Alberto Aiello & TODO \\
+Luca Anzaldi & Regression setup, metrics (QWK/Spearman), training pipeline, test on different dataset size, report \\
 \bottomrule
 \end{tabular}
-\caption{Work distribution (to be finalized).}
+\caption{Work distribution}
 \end{table}
 
 \end{document}
+
