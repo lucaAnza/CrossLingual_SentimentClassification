@@ -27,14 +27,21 @@ AI509/508/DM894 Final Project Report}
 
 % Optional (not required by template, but commonly useful)
 \begin{abstract}
-This project investigates sentiment prediction on a multilingual Amazon Reviews dataset.
-We study (i) how much target-language data is needed to reach near-peak performance,
-(ii) whether a single multilingual model trained on all languages outperforms monolingual
-models trained per language, and (iii) the per-language ranking of performance.
-We present an initial baseline experiment using a compact multilingual encoder model to
-validate the pipeline and assess training efficiency.
+This project focuses on sentiment analysis of Amazon product reviews in multiple languages.
+The goal is to train and evaluate neural language models to predict the sentiment expressed in
+customer reviews.
+We analyze how different factors influence model performance, including the amount of
+training data available for each language and the use of multilingual versus monolingual
+models.
+In particular, we study (i) how performance changes as the size of the training data increases,
+(ii) whether a single multilingual model can effectively handle multiple languages, and
+(iii) how performance varies across languages.
+Our experiments use a compact multilingual transformer model and provide a baseline evaluation
+of sentiment prediction on Amazon reviews.
 \end{abstract}
 
+\newpage
+\newpage
 % =========================================================
 % 1. Introduction and Problem Presentation
 % =========================================================
@@ -47,13 +54,29 @@ We consider two related formulations:
     \item \textbf{Classification:} predict discrete sentiment labels (e.g., negative / neutral / positive or 1--5 stars).
     \item \textbf{Regression:} predict a continuous sentiment score derived from the 1--5 star rating.
 \end{itemize}
-In later experiments, we focus on cross-lingual behavior and compare performance across languages.
+From an NLP perspective, this task requires transforming raw review text into meaningful numerical
+representations that can be processed by neural models.
+Each review is first tokenized into subword units and mapped into embeddings that capture semantic
+information.
+These representations are then processed by transformer-based architectures, which use attention
+mechanisms to model relationships between words and capture sentiment cues across the entire review.
+This approach allows the model to handle long texts, negation, and context-dependent sentiment,
+which are common in customer reviews.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\linewidth]{Taskdescription.png}
+    \caption{End-to-end sentiment analysis pipeline.
+    An Amazon review is processed by the model tokenizer, mapped to embeddings,
+    encoded by a transformer model, and passed to a task-specific prediction head.}
+    \label{fig:sentiment_pipeline}
+\end{figure}
 
 \subsection{Project goal and research questions}
 Our project investigates the following questions:
 \begin{enumerate}[itemsep=2pt]
     \item \textbf{How much target-language data is needed?}
-    We vary training set size (e.g., 10\%, 30\%, 50\%, 70\%, 100\%) and identify where performance saturates.
+    We vary training set size (e.g., 10\%, 30\%, 50\%, 70\%, 100\%) and identify where performance saturataes.
     \item \textbf{One multilingual model vs. monolingual models: which works better?}
     We compare a shared multilingual model trained on all languages against separate models trained per language.
     \item \textbf{Per-language performance ranking:}
@@ -62,11 +85,35 @@ Our project investigates the following questions:
 
 \subsection{Why the problem is challenging}
 \begin{itemize}[itemsep=2pt]
-    \item \textbf{Noisy labels:} star ratings may not perfectly reflect sentiment in the text.
-    \item \textbf{Ordinal target:} 1--5 stars are ordered categories; mistakes are not equally severe (1$\rightarrow$2 vs 1$\rightarrow$5).
-    \item \textbf{Multilingual variability:} languages differ in script, morphology, and tokenization behavior.
-    \item \textbf{Domain shift across categories:} product categories and writing style may vary significantly.
+    \item \textbf{Noisy and subjective labels:}
+    Star ratings do not always reflect the sentiment expressed in the text.
+    Users may assign high ratings while writing neutral reviews, or low ratings for reasons
+    that are not directly related to the product quality.
+
+    \item \textbf{Ordinal nature of the target:}
+    Sentiment ratings from 1 to 5 stars are ordered, which means that prediction errors have
+    different importance.
+    For example, predicting 4 instead of 5 stars is less severe than predicting 1 instead of 5,
+    which motivates the use of evaluation metrics that take ordering into account.
+
+    \item \textbf{Context-dependent sentiment:}
+    The sentiment of a word or sentence often depends on its context.
+    Elements such as negation or mixed opinions make it difficult to determine sentiment
+    based on individual words, and require models that can capture information across the
+    entire review.
+
+    \item \textbf{Multilingual and cross-lingual variability:}
+    Reviews are written in different languages, each with its own grammar, vocabulary, and
+    writing conventions.
+    This creates challenges for tokenization and representation learning, especially when
+    using a single model across multiple languages.
+
+    \item \textbf{Domain and style variation:}
+    Amazon reviews cover many product categories and writing styles, ranging from very short
+    comments to long and detailed descriptions.
+    This diversity makes it harder to learn sentiment representations that generalize well.
 \end{itemize}
+
 
 % =========================================================
 % 2. Method
@@ -111,8 +158,32 @@ We use a multilingual Amazon Reviews dataset \cite{kaggle_amazon_multilingual} s
 Each review includes a 1--5 star rating and textual fields (title/body), along with metadata such as language and product category.
 The dataset covers multiple languages (e.g., EN, ES, DE, FR, JA, ZH).
 
-For the baseline experiments, we subsample the dataset to enable faster experimentation while preserving class balance.
-Specifically, we use up to 1.2M training samples and cap validation and test splits at 30k samples each.
+\subsubsection{Data fields}
+\begin{table}[H]
+\centering
+\begin{tabular}{lp{9cm}}
+\toprule
+\textbf{Field} & \textbf{Description} \\
+\midrule
+\texttt{review\_id} & Unique identifier of the review. \\
+\texttt{product\_id} & Identifier of the product being reviewed. \\
+\texttt{reviewer\_id} & Identifier of the user who wrote the review. \\
+\texttt{stars} & Integer rating from 1 to 5 stars assigned by the user. \\
+\texttt{review\_title} & Short title of the review. \\
+\texttt{review\_body} & Main textual content of the review. \\
+\texttt{language} & Language in which the review is written. \\
+\texttt{product\_category} & Category of the reviewed product. \\
+\bottomrule
+\end{tabular}
+\caption{Overview of the main fields in the Amazon Reviews dataset.}
+\label{tab:dataset_fields}
+\end{table}
+
+Non-essential metadata (e.g., review IDs, product identifiers, language tags, and product category fields)
+are removed for the baseline experiments.
+
+
+
 
 \subsubsection{Label distribution}
 The training split is perfectly balanced across the five star ratings, as shown in Table~\ref{tab:label_distribution_train}.
@@ -447,21 +518,23 @@ Overall, these results suggest a trade-off between efficiency and performance: s
     \centering
     \includegraphics[width=0.7\linewidth]{qwk_regression.png}
     \caption{QWK metrics}
-    \label{fig:placeholder}
+    \label{fig:qwk_regression}
 \end{figure}
+
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.7\linewidth]{spearmanr_regression.png}
     \caption{Spearman metrics}
-    \label{fig:placeholder}
+    \label{fig:spearman_regression}
 \end{figure}
+
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.7\linewidth]{rmse_regression.png}
     \caption{RMSE metrics}
-    \label{fig:placeholder}
+    \label{fig:rmse_regression}
 \end{figure}
 
 
