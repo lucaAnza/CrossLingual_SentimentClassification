@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.1.21)  21 JAN 2026 15:58
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.1.21)  22 JAN 2026 12:34
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -604,7 +604,7 @@ Package caption Info: End \AtBeginDocument code.
  [1
 
 {C:/Users/aiell/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}]
-<Taskdescription.png, id=140, 712.6625pt x 114.4275pt>
+<Taskdescription.png, id=148, 712.6625pt x 114.4275pt>
 File: Taskdescription.png Graphic file (type png)
 <use Taskdescription.png>
 Package pdftex.def Info: Taskdescription.png  used on input line 68.
@@ -614,64 +614,57 @@ Overfull \hbox (16.70296pt too wide) in paragraph at lines 149--150
 []\OT1/cmr/bx/n/10.95 Hugging Face Trans-form-ers\OT1/cmr/m/n/10.95 : model load-ing, to-k-eniza-tion, and the train-ing loop (\OT1/cmtt/m/n/10.95 Trainer\OT1/cmr/m/n/10.95 ). 
  []
 
-[4] [5] [6] [7]
-Package hyperref Info: bookmark level for unknown todo defaults to 0 on input line 372.
+[4] [5]
+<tokenizexample.png, id=187, 394.47375pt x 143.53625pt>
+File: tokenizexample.png Graphic file (type png)
+<use tokenizexample.png>
+Package pdftex.def Info: tokenizexample.png  used on input line 287.
+(pdftex.def)             Requested size: 386.96027pt x 140.80254pt.
+ [6] [7 <./tokenizexample.png>] [8] [9]
+Package hyperref Info: bookmark level for unknown todo defaults to 0 on input line 428.
 
-Overfull \hbox (10.68091pt too wide) in paragraph at lines 372--372
+Overfull \hbox (10.68091pt too wide) in paragraph at lines 428--428
 [][][]\OT1/cmr/m/n/10.95 HIMANSHU 
  []
 
 
-Overfull \hbox (10.68091pt too wide) in paragraph at lines 372--372
+Overfull \hbox (10.68091pt too wide) in paragraph at lines 428--428
 [][][]\OT1/cmr/m/n/10.95 HIMANSHU 
  []
 
-
-Overfull \hbox (10.68091pt too wide) in paragraph at lines 374--374
-[][][]\OT1/cmr/m/n/10.95 HIMANSHU 
- []
-
-
-Overfull \hbox (10.68091pt too wide) in paragraph at lines 374--374
-[][][]\OT1/cmr/m/n/10.95 HIMANSHU 
- []
-
-
-LaTeX Warning: Marginpar on page 8 moved.
-
-[8]
+[10]
 
 Package hyperref Warning: Difference (2) between bookmark levels is greater 
-(hyperref)                than one, level fixed on input line 384.
+(hyperref)                than one, level fixed on input line 438.
 
-[9]
-<epoch_comparison.png, id=215, 564.1075pt x 262.9825pt>
+[11]
+<epoch_comparison.png, id=233, 564.1075pt x 262.9825pt>
 File: epoch_comparison.png Graphic file (type png)
 <use epoch_comparison.png>
-Package pdftex.def Info: epoch_comparison.png  used on input line 510.
+Package pdftex.def Info: epoch_comparison.png  used on input line 564.
 (pdftex.def)             Requested size: 364.19667pt x 169.78893pt.
-<qwk_regression.png, id=216, 500.87125pt x 294.09875pt>
+<qwk_regression.png, id=234, 500.87125pt x 294.09875pt>
 File: qwk_regression.png Graphic file (type png)
 <use qwk_regression.png>
-Package pdftex.def Info: qwk_regression.png  used on input line 519.
+Package pdftex.def Info: qwk_regression.png  used on input line 573.
 (pdftex.def)             Requested size: 318.66948pt x 187.1231pt.
- [10 <./epoch_comparison.png>]
-<spearmanr_regression.png, id=224, 501.875pt x 297.11pt>
+ [12 <./epoch_comparison.png>]
+<spearmanr_regression.png, id=242, 501.875pt x 297.11pt>
 File: spearmanr_regression.png Graphic file (type png)
 <use spearmanr_regression.png>
-Package pdftex.def Info: spearmanr_regression.png  used on input line 527.
+Package pdftex.def Info: spearmanr_regression.png  used on input line 581.
 (pdftex.def)             Requested size: 318.66948pt x 188.66275pt.
-<rmse_regression.png, id=225, 505.89pt x 300.12125pt>
+<rmse_regression.png, id=243, 505.89pt x 300.12125pt>
 File: rmse_regression.png Graphic file (type png)
 <use rmse_regression.png>
-Package pdftex.def Info: rmse_regression.png  used on input line 535.
+Package pdftex.def Info: rmse_regression.png  used on input line 589.
 (pdftex.def)             Requested size: 318.66948pt x 189.05449pt.
- [11 <./qwk_regression.png> <./spearmanr_regression.png> <./rmse_regression.png>] [12] [13]
-Underfull \hbox (badness 1142) in paragraph at lines 587--590
+ [13 <./qwk_regression.png> <./spearmanr_regression.png> <./rmse_regression.png>] [14] [15]
+Underfull \hbox (badness 1142) in paragraph at lines 641--644
 []\OT1/cmr/m/n/10.95 Biewald L., \OT1/cmr/m/it/10.95 Ex-per-i-ment Track-ing with Weights and Bi-ases\OT1/cmr/m/n/10.95 , \OT1/cmr/m/it/10.95 Soft-ware avail-able from
  []
 
-[14
+[16
 
 ] (report.aux)
  ***********
@@ -679,20 +672,20 @@ LaTeX2e <2025-11-01>
 L3 programming layer <2025-12-24>
  ***********
 Package rerunfilecheck Info: File `report.out' has not changed.
-(rerunfilecheck)             Checksum: 33E70EAD7E0078DAFE84AB689A251E13;5640.
+(rerunfilecheck)             Checksum: D6ED93E7696802F4630187CE7E1E4827;6454.
  ) 
 Here is how much of TeX's memory you used:
- 22994 strings out of 467871
- 431405 string characters out of 5418376
- 831885 words of memory out of 5000000
- 51439 multiletter control sequences out of 15000+600000
+ 23001 strings out of 467871
+ 431532 string characters out of 5418376
+ 830988 words of memory out of 5000000
+ 51441 multiletter control sequences out of 15000+600000
  635260 words of font info for 66 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 99i,11n,108p,560b,936s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 99i,11n,108p,560b,934s stack positions out of 10000i,1000n,20000p,200000b,200000s
  <C:\Users\aiell\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcrm1095.pk><C:/Users/aiell/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx10.pfb><C:/Users/aiell/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx12.pfb><C:/Users/aiell/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/aiell/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/aiell/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Users/aiell/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr17.pfb><C:/Users/aiell/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr8.pfb><C:/Users/aiell/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/aiell/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmti10.pfb><C:/Users/aiell/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmtt10.pfb>
-Output written on report.pdf (14 pages, 294273 bytes).
+Output written on report.pdf (16 pages, 310965 bytes).
 PDF statistics:
- 319 PDF objects out of 1000 (max. 8388607)
- 79 named destinations out of 1000 (max. 500000)
- 286 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 337 PDF objects out of 1000 (max. 8388607)
+ 84 named destinations out of 1000 (max. 500000)
+ 307 words of extra memory for PDF output out of 10000 (max. 10000000)
 

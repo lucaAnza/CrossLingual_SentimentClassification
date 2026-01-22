@@ -19,76 +19,77 @@
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {2.3.1}Data fields}{4}{subsubsection.2.3.1}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Overview of the main fields in the Amazon Reviews dataset.}}{4}{table.caption.3}\protected@file@percent }
 \newlabel{tab:dataset_fields}{{2}{4}{Overview of the main fields in the Amazon Reviews dataset}{table.caption.3}{}}
-\citation{sanh2019distilbert}
-\citation{wolf2020transformers}
-\citation{hf_distilbert_multilingual}
-\citation{hf_distilbert_multilingual}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {2.3.2}Label distribution}{5}{subsubsection.2.3.2}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Label distribution in the training set (balanced).}}{5}{table.caption.4}\protected@file@percent }
 \newlabel{tab:label_distribution_train}{{3}{5}{Label distribution in the training set (balanced)}{table.caption.4}{}}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {2.3.3}Dataset split sizes}{5}{subsubsection.2.3.3}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Overview of dataset splits used in the experiments.}}{5}{table.caption.5}\protected@file@percent }
 \newlabel{tab:dataset_splits}{{4}{5}{Overview of dataset splits used in the experiments}{table.caption.5}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.4}Model choice}{5}{subsection.2.4}\protected@file@percent }
+\citation{sanh2019distilbert}
+\citation{wolf2020transformers}
+\citation{hf_distilbert_multilingual}
+\citation{hf_distilbert_multilingual}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.4}Model choice}{6}{subsection.2.4}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces Main characteristics of the \texttt  {distilbert-base-multilingual-cased} model \cite  {hf_distilbert_multilingual}}}{6}{table.caption.6}\protected@file@percent }
 \newlabel{tab:model_features}{{5}{6}{Main characteristics of the \texttt {distilbert-base-multilingual-cased} model \cite {hf_distilbert_multilingual}}{table.caption.6}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.5}Preprocessing and input representation}{6}{subsection.2.5}\protected@file@percent }
 \newlabel{column-selection}{{2.5}{6}{Column selection}{section*.7}{}}
 \@writefile{toc}{\contentsline {paragraph}{Column selection.}{6}{section*.7}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Tokenization.}{6}{section*.8}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Label normalization.}{6}{section*.9}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.6}Training setup}{6}{subsection.2.6}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces Key training hyperparameters used in the experiments.}}{7}{table.caption.10}\protected@file@percent }
-\newlabel{tab:training_hyperparameters}{{6}{7}{Key training hyperparameters used in the experiments}{table.caption.10}{}}
-\@writefile{toc}{\contentsline {paragraph}{Hyperparameter selection.}{7}{section*.11}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.7}Evaluation metrics}{7}{subsection.2.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.7.1}Regression setting.}{7}{subsubsection.2.7.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Model vocabulary.}{6}{section*.9}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Example tokenization of Amazon review sentences in different languages using the \texttt  {distilbert-base-multilingual-cased} tokenizer. The figure shows how a shared multilingual subword vocabulary is used across languages.}}{7}{figure.caption.10}\protected@file@percent }
+\newlabel{fig:tokenization_examples}{{2}{7}{Example tokenization of Amazon review sentences in different languages using the \texttt {distilbert-base-multilingual-cased} tokenizer. The figure shows how a shared multilingual subword vocabulary is used across languages}{figure.caption.10}{}}
+\@writefile{toc}{\contentsline {paragraph}{Label normalization.}{7}{section*.11}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.6}Training setup}{7}{subsection.2.6}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces Key training hyperparameters used in the experiments.}}{7}{table.caption.12}\protected@file@percent }
+\newlabel{tab:training_hyperparameters}{{6}{7}{Key training hyperparameters used in the experiments}{table.caption.12}{}}
+\@writefile{toc}{\contentsline {paragraph}{Hyperparameter selection.}{7}{section*.13}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.7}Evaluation metrics}{8}{subsection.2.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.7.1}Regression setting.}{8}{subsubsection.2.7.1}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {2.7.2}Classification setting.}{8}{subsubsection.2.7.2}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.8}Experiment protocol}{8}{subsection.2.8}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {2.8.1}Regression vs Classification}{8}{subsubsection.2.8.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.8.2}How much target-language data is needed}{8}{subsubsection.2.8.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.8.3}One multilingual model vs. monolingual models}{8}{subsubsection.2.8.3}\protected@file@percent }
-\@writefile{tdo}{\contentsline {todo}{HIMANSHU or ALBERTO}{8}{section*.12}\protected@file@percent }
-\pgfsyspdfmark {pgfid1}{4661699}{21150069}
-\pgfsyspdfmark {pgfid4}{37068865}{21163525}
-\pgfsyspdfmark {pgfid5}{38985793}{20918339}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.8.4}Per-language performance ranking}{8}{subsubsection.2.8.4}\protected@file@percent }
-\@writefile{tdo}{\contentsline {todo}{HIMANSHU or ALBERTO}{8}{section*.13}\protected@file@percent }
-\pgfsyspdfmark {pgfid6}{4661699}{18791153}
-\pgfsyspdfmark {pgfid9}{37068865}{18035765}
-\pgfsyspdfmark {pgfid10}{38985793}{17790579}
-\@writefile{toc}{\contentsline {section}{\numberline {3}Results}{9}{section.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.0.1}Regression vs Classification}{9}{subsubsection.3.0.1}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {7}{\ignorespaces Comparison between regression and classification}}{9}{table.caption.14}\protected@file@percent }
-\newlabel{tab:regression_vs_classification}{{7}{9}{Comparison between regression and classification}{table.caption.14}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.0.2}Qualitative Comparison}{9}{subsubsection.3.0.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Regression}{9}{section*.15}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Classification}{10}{section*.16}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.0.3}Results about dataset size}{10}{subsubsection.3.0.3}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {8}{\ignorespaces Impact of dataset size on regression performance}}{10}{table.caption.17}\protected@file@percent }
-\newlabel{tab:best_dataset_size}{{8}{10}{Impact of dataset size on regression performance}{table.caption.17}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Epoch related to the dataset size}}{10}{figure.caption.18}\protected@file@percent }
-\newlabel{fig:epoch_comparison}{{2}{10}{Epoch related to the dataset size}{figure.caption.18}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces QWK metrics}}{11}{figure.caption.19}\protected@file@percent }
-\newlabel{fig:qwk_regression}{{3}{11}{QWK metrics}{figure.caption.19}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Spearman metrics}}{11}{figure.caption.20}\protected@file@percent }
-\newlabel{fig:spearman_regression}{{4}{11}{Spearman metrics}{figure.caption.20}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces RMSE metrics}}{11}{figure.caption.21}\protected@file@percent }
-\newlabel{fig:rmse_regression}{{5}{11}{RMSE metrics}{figure.caption.21}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {4}Discussion}{12}{section.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Key findings}{12}{subsection.4.1}\protected@file@percent }
-\@writefile{tdo}{\contentsline {todo}{Finish this chapter using the result of question2 and question3}{12}{section*.22}\protected@file@percent }
-\pgfsyspdfmark {pgfid11}{15180812}{46355939}
-\pgfsyspdfmark {pgfid14}{37068865}{46369395}
-\pgfsyspdfmark {pgfid15}{38985793}{46124209}
-\@writefile{toc}{\contentsline {section}{\numberline {5}Conclusion}{13}{section.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.8.2}How much target-language data is needed}{9}{subsubsection.2.8.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.8.3}One multilingual model vs. monolingual models: Which works better?}{9}{subsubsection.2.8.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.8.4}How much target-language data is needed}{9}{subsubsection.2.8.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.8.5}One multilingual model vs. monolingual models: Which works better?}{9}{subsubsection.2.8.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.8.6}Per-language performance ranking}{10}{subsubsection.2.8.6}\protected@file@percent }
+\@writefile{tdo}{\contentsline {todo}{HIMANSHU or ALBERTO}{10}{section*.14}\protected@file@percent }
+\pgfsyspdfmark {pgfid1}{4661699}{35393149}
+\pgfsyspdfmark {pgfid4}{37068865}{35406605}
+\pgfsyspdfmark {pgfid5}{38985793}{35161419}
+\@writefile{toc}{\contentsline {section}{\numberline {3}Results}{11}{section.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.0.1}Regression vs Classification}{11}{subsubsection.3.0.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {7}{\ignorespaces Comparison between regression and classification}}{11}{table.caption.15}\protected@file@percent }
+\newlabel{tab:regression_vs_classification}{{7}{11}{Comparison between regression and classification}{table.caption.15}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.0.2}Qualitative Comparison}{11}{subsubsection.3.0.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Regression}{11}{section*.16}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Classification}{12}{section*.17}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.0.3}Results about dataset size}{12}{subsubsection.3.0.3}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {8}{\ignorespaces Impact of dataset size on regression performance}}{12}{table.caption.18}\protected@file@percent }
+\newlabel{tab:best_dataset_size}{{8}{12}{Impact of dataset size on regression performance}{table.caption.18}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Epoch related to the dataset size}}{12}{figure.caption.19}\protected@file@percent }
+\newlabel{fig:epoch_comparison}{{3}{12}{Epoch related to the dataset size}{figure.caption.19}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces QWK metrics}}{13}{figure.caption.20}\protected@file@percent }
+\newlabel{fig:qwk_regression}{{4}{13}{QWK metrics}{figure.caption.20}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Spearman metrics}}{13}{figure.caption.21}\protected@file@percent }
+\newlabel{fig:spearman_regression}{{5}{13}{Spearman metrics}{figure.caption.21}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces RMSE metrics}}{13}{figure.caption.22}\protected@file@percent }
+\newlabel{fig:rmse_regression}{{6}{13}{RMSE metrics}{figure.caption.22}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4}Discussion}{14}{section.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Key findings}{14}{subsection.4.1}\protected@file@percent }
+\@writefile{tdo}{\contentsline {todo}{Finish this chapter using the result of question2 and question3}{14}{section*.23}\protected@file@percent }
+\pgfsyspdfmark {pgfid6}{15180812}{46355939}
+\pgfsyspdfmark {pgfid9}{37068865}{46369395}
+\pgfsyspdfmark {pgfid10}{38985793}{46124209}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Conclusion}{15}{section.5}\protected@file@percent }
 \bibcite{devlin2019bert}{1}
 \bibcite{sanh2019distilbert}{2}
 \bibcite{wolf2020transformers}{3}
 \bibcite{wandb}{4}
 \bibcite{kaggle_amazon_multilingual}{5}
 \bibcite{hf_distilbert_multilingual}{6}
-\@writefile{toc}{\contentsline {section}{\numberline {A}Reflection with respect to learning objectives}{14}{appendix.A}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {B}Work tasks distribution}{14}{appendix.B}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {9}{\ignorespaces Work distribution}}{14}{table.caption.24}\protected@file@percent }
-\gdef \@abspage@last{14}
+\@writefile{toc}{\contentsline {section}{\numberline {A}Reflection with respect to learning objectives}{16}{appendix.A}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {B}Work tasks distribution}{16}{appendix.B}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {9}{\ignorespaces Work distribution}}{16}{table.caption.25}\protected@file@percent }
+\gdef \@abspage@last{16}

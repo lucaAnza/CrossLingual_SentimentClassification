@@ -228,6 +228,7 @@ Test & 6{,}000 & 30{,}000 \\
 This balanced setup allows a fair comparison between regression and classification approaches
 and ensures that evaluation metrics are not biased by class imbalance.
 
+\newpage
 \subsection{Model choice}
 We use \texttt{distilbert-base-multilingual-cased}, an \textbf{encoder-only} Transformer model.
 It is a distilled variant of multilingual BERT, providing a good trade-off between computational
@@ -262,9 +263,34 @@ We rename \texttt{stars} to \texttt{label} and construct the input text by conca
 Non-essential metadata (e.g., review IDs, product identifiers, language tags, and product category fields)
 are removed for the baseline experiments.
 
-
 \paragraph{Tokenization.}
-We tokenize the new \texttt{text} column (prodecure on \ref{column-selection}) with the model tokenizer using truncation and dynamic padding (via \texttt{DataCollatorWithPadding}).
+The input text is processed using the tokenizer associated with the pre-trained model.
+This tokenizer applies a subword tokenization strategy, which splits the text into smaller
+units that belong to a shared multilingual vocabulary.
+Subword tokenization helps handle rare words, spelling variations, and text written in
+different languages, and ensures compatibility with the model vocabulary.
+Truncation is applied to limit the maximum sequence length, while dynamic padding is used
+to efficiently batch inputs during training.
+
+
+
+\paragraph{Model vocabulary.}
+The model uses a shared multilingual subword vocabulary rather than
+separate vocabularies for each language.
+This design allows the same tokens or subword units to be reused across
+different languages, enabling cross-lingual transfer.
+As a result, the model can process reviews written in multiple languages
+using a single tokenizer and a unified representation space.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\linewidth]{tokenizexample.png}
+    \caption{Example tokenization of Amazon review sentences in different languages
+    using the \texttt{distilbert-base-multilingual-cased} tokenizer.
+    The figure shows how a shared multilingual subword vocabulary is used across languages.}
+    \label{fig:tokenization_examples}
+\end{figure}
+
 
 \paragraph{Label normalization.}
 In the \textit{regression} setting, the original star ratings
@@ -368,8 +394,36 @@ cost, and to inform the choice of dataset size for subsequent experiments.
 In particular, detecting an early plateau allows us to reduce training time and resource
 usage while maintaining competitive performance in later cross-lingual analyses.
 
-\subsubsection{One multilingual model vs. monolingual models}
-\todo{HIMANSHU or ALBERTO}
+
+\subsubsection{One multilingual model vs. monolingual models: Which works better?}
+One of the main challenges in multilingual sentiment analysis is deciding whether to use one multilingual model or separate models for each language. Both options have their pros and cons.\\
+A multilingual model is trained on reviews in many languages at once, which helps it learn common patterns across different languages. The big advantage of this approach is that it can handle multiple languages with just one model, saving resources. Also, multilingual models can benefit from cross-lingual transfer, meaning that knowledge learned in one language can help improve performance in other languages, especially for languages with fewer resources.\\
+On the other hand, monolingual models are trained separately for each language, so they can focus on the specific features of each language. This might lead to better performance in languages with lots of data, because the model can specialize in each language's unique structure, grammar, and vocabulary.
+In our experiments, we compare a multilingual model trained on reviews from all languages with separate monolingual models trained on reviews from individual languages. By using the same amount of data for both, we can see how well the multilingual model handles the differences between languages compared to monolingual models that focus on just one language.
+
+
+\subsubsection{How much target-language data is needed}
+To investigate how model performance scales with the amount of target-language data,
+we trained the regression model using progressively larger subsets of the training set,
+namely 100k, 200k, 600k, and 1.2M samples.
+
+This experiment aims to identify potential performance plateaus, i.e., points beyond which
+adding more training data yields diminishing returns.
+Understanding this behavior is essential to balance predictive performance and computational
+cost, and to inform the choice of dataset size for subsequent experiments.
+In particular, detecting an early plateau allows us to reduce training time and resource
+usage while maintaining competitive performance in later cross-lingual analyses.
+
+\subsubsection{One multilingual model vs. monolingual models: Which works better?}
+One of the main challenges in multilingual sentiment analysis is deciding whether to use one multilingual model or separate models for each language. Both options have their pros and cons.\\
+A multilingual model is trained on reviews in many languages at once, which helps it learn common patterns across different languages. The big advantage of this approach is that it can handle multiple languages with just one model, saving resources. Also, multilingual models can benefit from cross-lingual transfer, meaning that knowledge learned in one language can help improve performance in other languages, especially for languages with fewer resources.\\
+On the other hand, monolingual models are trained separately for each language, so they can focus on the specific features of each language. This might lead to better performance in languages with lots of data, because the model can specialize in each language's unique structure, grammar, and vocabulary.
+In our experiments, we compare a multilingual model trained on reviews from all languages with separate monolingual models trained on reviews from individual languages. By using the same amount of data for both, we can see how well the multilingual model handles the differences between languages compared to monolingual models that focus on just one language.
+The data is split as follows:\\
+  - For the monolingual model, 500k reviews are selected from a single language (e.g., English) and used to train the model.\\
+  - For the multilingual model, 500k reviews are distributed across multiple languages (e.g., English, Spanish, French, and German) to train the model.\\
+The same model architecture is used for both types of models: distilbert-base-multilingual-cased, a transformer-based model. This model has been pre-trained on a multilingual corpus and fine-tuned for the task of sentiment analysis.
+
 \subsubsection{Per-language performance ranking}
 \todo{HIMANSHU or ALBERTO}
 
