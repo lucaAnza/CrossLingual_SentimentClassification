@@ -1,5 +1,5 @@
 # Fdb version 4
-["pdflatex"] 1769081674.94342 "c:/Users/aiell/Documents/GitHub/CrossLingual_SentimentClassification/src/report.tex" "report.pdf" "report" 1769081676.54693 0
+["pdflatex"] 1769274485.0642 "c:/Users/aiell/Documents/GitHub/CrossLingual_SentimentClassification/src/report.tex" "report.pdf" "report" 1769274490.79875 0
   "C:/Program Files/MiKTeX/tex/generic/bigintcalc/bigintcalc.sty" 1576433602 40635 c40361e206be584d448876bba8a64a3b ""
   "C:/Program Files/MiKTeX/tex/generic/bitset/bitset.sty" 1575926576 33961 6b5c75130e435b2bfdb9f480a09a39f9 ""
   "C:/Program Files/MiKTeX/tex/generic/gettitlestring/gettitlestring.sty" 1576433666 8371 9d55b8bd010bc717624922fb3477d92e ""
@@ -159,12 +159,15 @@
   "C:/Users/aiell/AppData/Local/Programs/MiKTeX/tex/latex/xcolor/xcolor.sty" 1729265222 55384 b454dec21c2d9f45ec0b793f0995b992 ""
   "C:/Users/aiell/AppData/Local/Programs/MiKTeX/tex/latex/xkeyval/xkeyval.sty" 1656236919 4937 4ce600ce9bd4ec84d0250eb6892fcf4f ""
   "Taskdescription.png" 1769006973 48425 6a65860929576bda8e2236d6ec0dfe40 ""
-  "c:/Users/aiell/Documents/GitHub/CrossLingual_SentimentClassification/src/report.tex" 1769081674 33337 73944510e84811ad17b1c72758a04cd7 ""
+  "c:/Users/aiell/Documents/GitHub/CrossLingual_SentimentClassification/src/report.tex" 1769274483 39086 265ed5ebabf815883fce08baa27414a7 ""
   "epoch_comparison.png" 1769000022 10910 f8c8ee6b6914f6b06ef77b5be2abb3cc ""
+  "errors_by_language_multilingual.png" 1769273308 69996 abc783b04ddd3583f7e4925032a878c6 ""
+  "errors_by_language_single.png" 1769273324 73989 0a6094dd21461f1a65b445ed9e8d325c ""
+  "loss1.png" 1769194520 174397 68c8a9af5034a91609bc355357d7f059 ""
   "qwk_regression.png" 1769000023 20885 6bec58d9e53a37fe6222d7454f3bff6a ""
-  "report.aux" 1769081676 10996 1e6e2be687b263b56a273b46e1d92d26 "pdflatex"
-  "report.out" 1769081676 6454 d6ed93e7696802f4630187ce7e1e4827 "pdflatex"
-  "report.tex" 1769081674 33337 73944510e84811ad17b1c72758a04cd7 ""
+  "report.aux" 1769274490 13424 0c3cf5c791e654463d0970b50f874567 "pdflatex"
+  "report.out" 1769274490 6345 2ecadc4a71663b1bc465746a27552bc1 "pdflatex"
+  "report.tex" 1769274483 39086 265ed5ebabf815883fce08baa27414a7 ""
   "rmse_regression.png" 1769000023 25661 3e828043814488bf3b78240d10b4c289 ""
   "spearmanr_regression.png" 1769000023 22580 23ca9e7ebc20b2beec636503e6c4da77 ""
   "tokenizexample.png" 1769009601 20906 ed7766fd0f19ad6e7fed212d0cb7d452 ""

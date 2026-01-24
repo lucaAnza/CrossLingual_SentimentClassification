@@ -380,6 +380,8 @@ The first set of experiments was designed to assess whether sentiment prediction
 formulated as a \textit{regression} or a \textit{classification} problem.
 Since the Amazon review ratings are ordinal in nature, both approaches are viable:
 classification treats each star rating as a discrete category, while regression models
+monolingual models are trained separately for each language, so they can focus on the specific features of each language. This might lead to better performance in languages with lots of data, because the model can specialize in each language's unique structure, grammar, and vocabulary.
+In our experiments, we compare a multilingual model trained on reviews from all languages with separate monolingual models trained on reviews from individual languages. By using the same amount of data for both, we can see how well the multilingual model handles the differences between languages compared to monolingual models that focus on just one language.
 sentiment as a continuous variable that preserves the ordering between ratings.
 
 \subsubsection{How much target-language data is needed}
@@ -394,12 +396,6 @@ cost, and to inform the choice of dataset size for subsequent experiments.
 In particular, detecting an early plateau allows us to reduce training time and resource
 usage while maintaining competitive performance in later cross-lingual analyses.
 
-
-\subsubsection{One multilingual model vs. monolingual models: Which works better?}
-One of the main challenges in multilingual sentiment analysis is deciding whether to use one multilingual model or separate models for each language. Both options have their pros and cons.\\
-A multilingual model is trained on reviews in many languages at once, which helps it learn common patterns across different languages. The big advantage of this approach is that it can handle multiple languages with just one model, saving resources. Also, multilingual models can benefit from cross-lingual transfer, meaning that knowledge learned in one language can help improve performance in other languages, especially for languages with fewer resources.\\
-On the other hand, monolingual models are trained separately for each language, so they can focus on the specific features of each language. This might lead to better performance in languages with lots of data, because the model can specialize in each language's unique structure, grammar, and vocabulary.
-In our experiments, we compare a multilingual model trained on reviews from all languages with separate monolingual models trained on reviews from individual languages. By using the same amount of data for both, we can see how well the multilingual model handles the differences between languages compared to monolingual models that focus on just one language.
 
 
 \subsubsection{How much target-language data is needed}
@@ -420,8 +416,8 @@ A multilingual model is trained on reviews in many languages at once, which help
 On the other hand, monolingual models are trained separately for each language, so they can focus on the specific features of each language. This might lead to better performance in languages with lots of data, because the model can specialize in each language's unique structure, grammar, and vocabulary.
 In our experiments, we compare a multilingual model trained on reviews from all languages with separate monolingual models trained on reviews from individual languages. By using the same amount of data for both, we can see how well the multilingual model handles the differences between languages compared to monolingual models that focus on just one language.
 The data is split as follows:\\
-  - For the monolingual model, 500k reviews are selected from a single language (e.g., English) and used to train the model.\\
-  - For the multilingual model, 500k reviews are distributed across multiple languages (e.g., English, Spanish, French, and German) to train the model.\\
+  - For the monolingual model, 200k reviews are selected from a single language (e.g., English) and used to train the model.\\
+  - For the multilingual model, 200k reviews are distributed across multiple languages (e.g., English, Spanish, French, and German) to train the model.\\
 The same model architecture is used for both types of models: distilbert-base-multilingual-cased, a transformer-based model. This model has been pre-trained on a multilingual corpus and fine-tuned for the task of sentiment analysis.
 
 \subsubsection{Per-language performance ranking}
@@ -592,8 +588,118 @@ Overall, these results suggest a trade-off between efficiency and performance: s
 \end{figure}
 
 
+\subsubsection{One multilingual model vs. monolingual models}
 
 
+As expected, the single-language model shows faster training times compared to the multilingual model. 
+This is because the single-language model is trained on data that is more homogeneous and specific to a single language (in this case German). 
+The reviews in this dataset share more similarities, which allows the model to focus on language-specific features without the added complexity of handling multiple languages.
+On the other hand, the multilingual model has to process reviews in four different languages (English, Spanish, French, and German, Chinese), which introduces additional challenges. 
+The model needs to generalize across diverse linguistic structures, vocabulary, and syntactic differences, making the training process slower as it deals with a broader and more complex set of data. 
+The training loss for both models over time is shown in Figure \ref{fig:train_loss}, where we can observe the faster convergence of the single-language model.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{loss1.png}
+    \caption{Training loss comparison between multilingual and monolingual models. The multilingual model (in pink) shows slower convergence compared to the single-language model (in purple).}
+    \label{fig:train_loss}
+\end{figure}
+
+
+\begin{table}[H]
+\centering
+\resizebox{\textwidth}{!}{
+\begin{tabular}{lcc}
+\toprule
+\textbf{Metric Training} & \textbf{Multilingual Model} & \textbf{Single Language Model (English)} \\
+\midrule
+Dataset & Multilingual (English, Spanish, French, German, Chinese) & Single Language (German) \\
+Dataset Size & 200k (balanced across languages) & 200k (German-only) \\
+Train Loss & 0.3909 & 0.3543 \\
+Eval Loss & 0.524 & 0.483 \\
+Accuracy Eval(3-class) & 0.770 & 0.748 \\
+Macro F1 Eval (3-class) & 0.770 & 0.792 \\
+Macro Precision Eval &  0.715 & 0.758 \\
+Macro Recall Eval & 0.706 & 0.745 \\
+Training Time (hours) & 4 & 4 \\
+Number of Steps & 13500 & 13500 \\
+\bottomrule
+\end{tabular}
+}
+\caption{Comparison of Multilingual and Single Language (German) Models on the Same Dataset (either Multilingual or English-only).}
+\label{tab:model_comparison}
+\end{table}
+
+
+\paragraph{Model Evaluation on German Test Set}
+
+Both models are tested on a set of 5000 German reviews. 
+The results show that the single-language model performs slightly better than the multilingual model, as expected. 
+The accuracy of the single-language model is 81.34, higher than the 80.22 of the multilingual model.
+
+ 
+\begin{table}[H]
+\centering
+\resizebox{\textwidth}{!}{
+\begin{tabular}{lcc}
+\toprule
+\textbf{Metric Evaluation} & \textbf{Multilingual Model (DE)} & \textbf{Single Language Model (DE)} \\
+\midrule
+Accuracy & 0.8022 & 0.8134 \\
+Precision & 0.7596 & 0.7701 \\
+Recall & 0.7550 & 0.7563 \\
+F1 Score & 0.7566 & 0.7597 \\
+\bottomrule
+\end{tabular}
+}
+\caption{Comparison of Multilingual and Single Language Models Evaluated on a Test Set of 5000 German Reviews.}
+\label{tab:test_set_comparison}
+\end{table}
+
+
+
+\paragraph{Model Evaluation on Cross-Lingual Test Set}
+
+Both models are tested on a cross-lingual test set with 1000 reviews in five languages: Japanese (ja), Spanish (es), French (fr), Chinese (zh), and English (en). 
+The results show that the single-language model, trained only on German data, performs much worse on this mixed-language dataset. 
+The accuracy of the single-language model is much lower than the accuracy of the multilingual model.
+Looking at the error distribution (shown in the bar plots), we can see that the single-language model makes fewer mistakes in English and Spanish, as these languages are more similar to German. 
+However, it struggles more with reviews in Japanese, French, and Chinese, as it was not trained on these languages. 
+These results show that while the single-language model works well for German, it struggles with data in other languages. The multilingual model, however, is more flexible and works better with data in multiple languages. To compare the models more fully, it would be useful to test them on other diverse datasets or in real-world multilingual situations.
+
+
+\begin{table}[H]
+\centering
+\resizebox{\textwidth}{!}{
+\begin{tabular}{lcc}
+\toprule
+\textbf{Metric Evaluation} & \textbf{Multilingual Model} & \textbf{Single Language Model} \\
+\midrule
+Accuracy & 0.7650 & 0.6110 \\
+Precision & 0.7075 & 0.5658 \\
+Recall & 0.6945 & 0.5417 \\
+F1 Score & 0.6966 & 0.5390 \\
+\bottomrule
+\end{tabular}
+}
+\caption{Comparison of Multilingual and Single Language Models Evaluated on a Cross-Lingual Test Set (1000 Reviews, Excluding German).}
+\label{tab:cross_lingual_comparison}
+\end{table}
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{errors_by_language_single.png} % replace with your image path
+    \caption{Errors by language for the Single Language Model.}
+    \label{fig:single_language_errors}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{errors_by_language_multilingual.png} % replace with your image path
+    \caption{Errors by language for the Multilingual Model.}
+    \label{fig:multilingual_errors}
+\end{figure}
 
 % =========================================================
 % 4. Discussion
@@ -603,8 +709,17 @@ Overall, these results suggest a trade-off between efficiency and performance: s
 
 \subsection{Key findings}
 Our baseline confirms that a multilingual encoder fine-tuned as a regressor can capture sentiment intensity and ordinal structure... 
-\todo{Finish this chapter using the result of question2 and question3}
 
+\paragraph{Multilingual vs Monolingual Models}
+In this study, we compared a single-language model and a multilingual model. 
+The results show that each model has its strengths depending on the task.
+The single-language model works very well when the data is in one language, as it is specifically trained for that language. 
+However, it has difficulties when working with languages it wasn’t trained on, like Japanese, Spanish, or Chinese. 
+This makes it less suitable for tasks involving multiple languages.
+The multilingual model, on the other hand, performs well across different languages. 
+While it wasn’t as strong as the single-language model on German reviews, it performed more consistently on the cross-lingual test set. 
+It is more flexible and is a better choice when the task involves multiple languages or when data comes from different linguistic backgrounds.
+In summary, if you’re working with data in just one language, the single-language model is probably the best choice. But if you need to handle reviews or text in multiple languages, the multilingual model is more versatile and offers better performance across languages.
 
 % =========================================================
 % 5. Conclusion
@@ -682,8 +797,8 @@ This project aligns with the course learning objectives by requiring:
 \toprule
 \textbf{Member} & \textbf{Main contributions} \\
 \midrule
-Imanshu Sharma & TODO \\
-Alberto Aiello & TODO \\
+Imanshu Sharma & Per-Language performance ranking \\
+Alberto Aiello & Multilingual model vs Singlelingual model, dataset preprocessing, training pipeline, inference, report \\
 Luca Anzaldi & Regression setup, metrics (QWK/Spearman), training pipeline, test on different dataset size, report \\
 \bottomrule
 \end{tabular}

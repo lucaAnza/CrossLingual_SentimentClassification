@@ -50,14 +50,13 @@
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.8}Experiment protocol}{8}{subsection.2.8}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {2.8.1}Regression vs Classification}{8}{subsubsection.2.8.1}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {2.8.2}How much target-language data is needed}{9}{subsubsection.2.8.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.8.3}One multilingual model vs. monolingual models: Which works better?}{9}{subsubsection.2.8.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.8.4}How much target-language data is needed}{9}{subsubsection.2.8.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.8.5}One multilingual model vs. monolingual models: Which works better?}{9}{subsubsection.2.8.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.8.6}Per-language performance ranking}{10}{subsubsection.2.8.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.8.3}How much target-language data is needed}{9}{subsubsection.2.8.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.8.4}One multilingual model vs. monolingual models: Which works better?}{9}{subsubsection.2.8.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.8.5}Per-language performance ranking}{10}{subsubsection.2.8.5}\protected@file@percent }
 \@writefile{tdo}{\contentsline {todo}{HIMANSHU or ALBERTO}{10}{section*.14}\protected@file@percent }
-\pgfsyspdfmark {pgfid1}{4661699}{35393149}
-\pgfsyspdfmark {pgfid4}{37068865}{35406605}
-\pgfsyspdfmark {pgfid5}{38985793}{35161419}
+\pgfsyspdfmark {pgfid1}{4661699}{43414759}
+\pgfsyspdfmark {pgfid4}{37068865}{43428215}
+\pgfsyspdfmark {pgfid5}{38985793}{43183029}
 \@writefile{toc}{\contentsline {section}{\numberline {3}Results}{11}{section.3}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {3.0.1}Regression vs Classification}{11}{subsubsection.3.0.1}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {7}{\ignorespaces Comparison between regression and classification}}{11}{table.caption.15}\protected@file@percent }
@@ -76,20 +75,32 @@
 \newlabel{fig:spearman_regression}{{5}{13}{Spearman metrics}{figure.caption.21}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces RMSE metrics}}{13}{figure.caption.22}\protected@file@percent }
 \newlabel{fig:rmse_regression}{{6}{13}{RMSE metrics}{figure.caption.22}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {4}Discussion}{14}{section.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Key findings}{14}{subsection.4.1}\protected@file@percent }
-\@writefile{tdo}{\contentsline {todo}{Finish this chapter using the result of question2 and question3}{14}{section*.23}\protected@file@percent }
-\pgfsyspdfmark {pgfid6}{15180812}{46355939}
-\pgfsyspdfmark {pgfid9}{37068865}{46369395}
-\pgfsyspdfmark {pgfid10}{38985793}{46124209}
-\@writefile{toc}{\contentsline {section}{\numberline {5}Conclusion}{15}{section.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.0.4}One multilingual model vs. monolingual models}{14}{subsubsection.3.0.4}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Training loss comparison between multilingual and monolingual models. The multilingual model (in pink) shows slower convergence compared to the single-language model (in purple).}}{14}{figure.caption.23}\protected@file@percent }
+\newlabel{fig:train_loss}{{7}{14}{Training loss comparison between multilingual and monolingual models. The multilingual model (in pink) shows slower convergence compared to the single-language model (in purple)}{figure.caption.23}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {9}{\ignorespaces Comparison of Multilingual and Single Language (German) Models on the Same Dataset (either Multilingual or English-only).}}{14}{table.caption.24}\protected@file@percent }
+\newlabel{tab:model_comparison}{{9}{14}{Comparison of Multilingual and Single Language (German) Models on the Same Dataset (either Multilingual or English-only)}{table.caption.24}{}}
+\@writefile{toc}{\contentsline {paragraph}{Model Evaluation on German Test Set}{14}{section*.25}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {10}{\ignorespaces Comparison of Multilingual and Single Language Models Evaluated on a Test Set of 5000 German Reviews.}}{15}{table.caption.26}\protected@file@percent }
+\newlabel{tab:test_set_comparison}{{10}{15}{Comparison of Multilingual and Single Language Models Evaluated on a Test Set of 5000 German Reviews}{table.caption.26}{}}
+\@writefile{toc}{\contentsline {paragraph}{Model Evaluation on Cross-Lingual Test Set}{15}{section*.27}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {11}{\ignorespaces Comparison of Multilingual and Single Language Models Evaluated on a Cross-Lingual Test Set (1000 Reviews, Excluding German).}}{15}{table.caption.28}\protected@file@percent }
+\newlabel{tab:cross_lingual_comparison}{{11}{15}{Comparison of Multilingual and Single Language Models Evaluated on a Cross-Lingual Test Set (1000 Reviews, Excluding German)}{table.caption.28}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Errors by language for the Single Language Model.}}{15}{figure.caption.29}\protected@file@percent }
+\newlabel{fig:single_language_errors}{{8}{15}{Errors by language for the Single Language Model}{figure.caption.29}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces Errors by language for the Multilingual Model.}}{16}{figure.caption.30}\protected@file@percent }
+\newlabel{fig:multilingual_errors}{{9}{16}{Errors by language for the Multilingual Model}{figure.caption.30}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4}Discussion}{17}{section.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Key findings}{17}{subsection.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Multilingual vs Monolingual Models}{17}{section*.31}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5}Conclusion}{18}{section.5}\protected@file@percent }
 \bibcite{devlin2019bert}{1}
 \bibcite{sanh2019distilbert}{2}
 \bibcite{wolf2020transformers}{3}
 \bibcite{wandb}{4}
 \bibcite{kaggle_amazon_multilingual}{5}
 \bibcite{hf_distilbert_multilingual}{6}
-\@writefile{toc}{\contentsline {section}{\numberline {A}Reflection with respect to learning objectives}{16}{appendix.A}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {B}Work tasks distribution}{16}{appendix.B}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {9}{\ignorespaces Work distribution}}{16}{table.caption.25}\protected@file@percent }
-\gdef \@abspage@last{16}
+\@writefile{toc}{\contentsline {section}{\numberline {A}Reflection with respect to learning objectives}{19}{appendix.A}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {B}Work tasks distribution}{19}{appendix.B}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {12}{\ignorespaces Work distribution}}{19}{table.caption.33}\protected@file@percent }
+\gdef \@abspage@last{19}
