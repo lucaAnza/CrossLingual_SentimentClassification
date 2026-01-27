@@ -2,15 +2,24 @@ from datasets import Value
 
 
 # Filter the dataset + change labels and remove useless + tokenizzation
-def preprocessing(db , tokenizer ,  task = 'Classification' , k = None):
+def preprocessing(db , tokenizer ,  task = 'Classification' , k = None, max_length = None):
 
     task_list = ['Classification' , 'Regression']
 
     # Reduce dataset size for faster experimentation 
     if(k):
-        db['train'] = db['train'].shuffle(seed=42).select(range(k))
-        db['test'] = db['test'].shuffle(seed=42).select(range(min(30000 , k//6)))
-        db['validation'] = db['validation'].shuffle(seed=42).select(range(min(30000 , k//6)))
+        train_size = len(db["train"])
+        test_size = len(db["test"])
+        val_size = len(db["validation"])
+
+        train_n = min(k, train_size)
+        eval_n = min(30000, k // 6)
+        test_n = min(eval_n, test_size)
+        val_n = min(eval_n, val_size)
+
+        db["train"] = db["train"].shuffle(seed=42).select(range(train_n))
+        db["test"] = db["test"].shuffle(seed=42).select(range(test_n))
+        db["validation"] = db["validation"].shuffle(seed=42).select(range(val_n))
 
     # Fix labels from # 1–5 → 0–4
     def adjust_label_classification(example):
@@ -31,6 +40,13 @@ def preprocessing(db , tokenizer ,  task = 'Classification' , k = None):
         bodies = [b if b is not None else "" for b in bodies]  # Avoid Null bodies
 
         # In this way the tokenizer insert a special token (such as [SEP]) between titles and bodies
+        if max_length:
+            return tokenizer(
+                titles,
+                bodies,
+                truncation=True,
+                max_length=max_length
+            )
         return tokenizer(
             titles,
             bodies,
