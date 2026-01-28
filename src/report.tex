@@ -51,8 +51,8 @@ of sentiment prediction on Amazon reviews.
 Given an Amazon review text, the goal is to predict its sentiment.
 We consider two related formulations:
 \begin{itemize}[itemsep=2pt]
-    \item \textbf{Classification:} predict discrete sentiment labels (e.g., negative / neutral / positive or 1--5 stars).
-    \item \textbf{Regression:} predict a continuous sentiment score derived from the 1--5 star rating.
+    \item \textbf{Classification:} predict discrete sentiment labels (e.g., negative / neutral / positive or 1-5 stars).
+    \item \textbf{Regression:} predict a continuous sentiment score derived from the 1-5 star rating.
 \end{itemize}
 From an NLP perspective, this task requires transforming raw review text into meaningful numerical
 representations that can be processed by neural models.
@@ -155,7 +155,7 @@ We implemented the pipeline in Python using the following libraries:
 
 \subsection{Dataset overview}
 We use a multilingual Amazon Reviews dataset \cite{kaggle_amazon_multilingual} split into \texttt{train.csv}, \texttt{validation.csv}, and \texttt{test.csv}.
-Each review includes a 1--5 star rating and textual fields (title/body), along with metadata such as language and product category.
+Each review includes a 1-5 star rating and textual fields (title/body), along with metadata such as language and product category.
 The dataset covers multiple languages (e.g., EN, ES, DE, FR, JA, ZH).
 
 \subsubsection{Data fields}
@@ -357,9 +357,9 @@ as \textbf{regression} or \textbf{classification}.
 \subsubsection{Regression setting.}
 When modeling sentiment as a continuous variable, we report the following metrics:
 \begin{itemize}[itemsep=2pt]
-    \item \textbf{Mean Absolute Error (MAE)} and \textbf{Root Mean Squared Error (RMSE)}, computed in the original 1--5 star scale, to measure average prediction error.
+    \item \textbf{Mean Absolute Error (MAE)} and \textbf{Root Mean Squared Error (RMSE)}, computed in the original 1-5 star scale, to measure average prediction error.
     \item \textbf{Rounded Accuracy (5-class)}, obtained by rounding the continuous prediction to the nearest integer star rating.
-    \item \textbf{Rounded Accuracy (3-class)}, computed after mapping 1--2$\rightarrow$negative, 3$\rightarrow$neutral, and 4--5$\rightarrow$positive.
+    \item \textbf{Rounded Accuracy (3-class)}, computed after mapping 1-2$\rightarrow$negative, 3$\rightarrow$neutral, and 4-5$\rightarrow$positive.
     \item \textbf{Spearman’s rank correlation coefficient ($\rho$)}, to assess how well the model preserves the ordinal ranking of sentiment.
     \item \textbf{Quadratic Weighted Kappa (QWK)}, which measures ordinal agreement while penalizing larger rating discrepancies more heavily.
 \end{itemize}
@@ -398,18 +398,6 @@ usage while maintaining competitive performance in later cross-lingual analyses.
 
 
 
-\subsubsection{How much target-language data is needed}
-To investigate how model performance scales with the amount of target-language data,
-we trained the regression model using progressively larger subsets of the training set,
-namely 100k, 200k, 600k, and 1.2M samples.
-
-This experiment aims to identify potential performance plateaus, i.e., points beyond which
-adding more training data yields diminishing returns.
-Understanding this behavior is essential to balance predictive performance and computational
-cost, and to inform the choice of dataset size for subsequent experiments.
-In particular, detecting an early plateau allows us to reduce training time and resource
-usage while maintaining competitive performance in later cross-lingual analyses.
-
 \subsubsection{One multilingual model vs. monolingual models: Which works better?}
 One of the main challenges in multilingual sentiment analysis is deciding whether to use one multilingual model or separate models for each language. Both options have their pros and cons.\\
 A multilingual model is trained on reviews in many languages at once, which helps it learn common patterns across different languages. The big advantage of this approach is that it can handle multiple languages with just one model, saving resources. Also, multilingual models can benefit from cross-lingual transfer, meaning that knowledge learned in one language can help improve performance in other languages, especially for languages with fewer resources.\\
@@ -422,17 +410,17 @@ The same model architecture is used for both types of models: distilbert-base-mu
 
 \subsubsection{Per-language performance ranking}
 In the third experiment, we focus on \textbf{ranking} the languages by how well a comparable model performs on each of them.
-In our setting, ``ranking'' does not mean predicting a ranked list directly; instead, it refers to a \textit{performance-based ordering} of languages obtained by training the same model with the same budget and then comparing the resulting evaluation metrics.
+In our setting, ``ranking'' does not mean predicting a ranked list directly; instead, it refers to a performance-based ordering of languages obtained by training the same model with the same budget and then comparing the resulting evaluation metrics.
 This analysis is useful because it highlights which languages are easier or harder for the model under identical conditions, and it provides a more fine-grained view than an overall average across all languages.
 
-The supervision signal is the \textbf{1--5 star rating} associated with each review, which can be interpreted as an \textbf{ordinal} measure of sentiment intensity.
+The supervision signal is the \textbf{1-5 star rating} associated with each review, which can be interpreted as an \textbf{ordinal} measure of sentiment intensity.
 To preserve this ordering and avoid forcing sharp class boundaries, we treat the task as \textbf{regression}: the star rating $y \in \{1,2,3,4,5\}$ is normalized to $[0,1]$ during training and the model predicts a continuous score that can represent intermediate sentiment levels.
 For evaluation, we report both continuous and ordinal/rounded metrics.
-In particular, we compute MAE and RMSE on the original 1--5 scale, and we also compute \textbf{rounded accuracies} by mapping the continuous prediction back to the nearest star rating (5-class) or to a 3-class sentiment bin.
+In particular, we compute MAE and RMSE on the original 1-5 scale, and we also compute \textbf{rounded accuracies} by mapping the continuous prediction back to the nearest star rating (5-class) or to a 3-class sentiment bin.
 Finally, because the labels are ordinal, we include \textbf{Spearman correlation} and \textbf{Quadratic Weighted Kappa (QWK)} to quantify how well the predicted scores preserve the relative ranking of sentiments and to penalize large rating discrepancies more than small ones.
 
 To obtain a fair comparison, we train \textbf{one model per language} using the same backbone (multilingual DistilBERT) and the same training hyperparameters, and we keep the dataset size fixed per language.
-We then rank languages based on ordinal consistency metrics (e.g., QWK/Spearman) and error metrics (e.g., RMSE), which together provide an interpretable view of per-language difficulty.
+We then rank languages based on ordinal consistency metrics and error metrics, which together provide an interpretable view of per-language difficulty.
 
 
 % =========================================================
@@ -712,16 +700,16 @@ F1 Score & 0.6966 & 0.5390 \\
     \label{fig:multilingual_errors}
 \end{figure}
 
-\subsubsection{Results \& Discussion}
+\subsubsection{Per-language performance ranking}
 This section reports the results of Experiment 3 (per-language ranking) for the regression setup.
 We trained a separate \textit{distilbert-base-multilingual-cased} regressor per language (EN/DE/FR) using 100k samples per language and evaluated each model using the regression-oriented metrics described in Section 2.
-Since the target is ordinal (1--5 stars), we interpret performance using both error-based measures (MAE/RMSE) and ordinal consistency measures (Spearman and QWK), as well as rounded accuracies that map the continuous score back to discrete star ratings.
+Since the target is ordinal (1-5 stars), we interpret performance using both error-based measures (MAE/RMSE) and ordinal consistency measures (Spearman and QWK), as well as rounded accuracies that map the continuous score back to discrete star ratings.
 
 \paragraph{Training-time validation curves.}
 Table~\ref{tab:exp3_val_epoch_metrics} summarizes the epoch-by-epoch validation metrics for the three languages.
 Across all languages, the largest improvements occur in the first 2--4 epochs, after which the curves begin to plateau.
 This behavior is consistent with the use of a pretrained multilingual encoder: fine-tuning quickly adapts the representation to sentiment cues, while later epochs yield smaller gains and can slightly fluctuate.
-Figures~\ref{fig:exp3_val_rounded_acc}--\ref{fig:exp3_val_rmse} visualize these trends for rounded accuracy, QWK, and RMSE.
+Figures~\ref{fig:exp3_val_rounded_acc}-\ref{fig:exp3_val_rmse} visualize these trends for rounded accuracy, QWK, and RMSE.
 
 \begin{table}[H]
 \centering
@@ -771,7 +759,7 @@ Figures~\ref{fig:exp3_val_rounded_acc}--\ref{fig:exp3_val_rmse} visualize these 
 \end{figure}
 
 \paragraph{Final training summary.}
-After 8 epochs, training converges to a stable loss for each language (Table~\ref{tab:exp3_train_summary}), aligning with the validation plateau observed in Figures~\ref{fig:exp3_val_rounded_acc}--\ref{fig:exp3_val_rmse}.
+After 8 epochs, training converges to a stable loss for each language (Table~\ref{tab:exp3_train_summary}), aligning with the validation plateau observed in Figures~\ref{fig:exp3_val_rounded_acc}-\ref{fig:exp3_val_rmse}.
 
 \begin{table}[H]
 \centering
@@ -819,14 +807,7 @@ FR & 0.03143 & 0.55132 & 0.70910 & 0.5508 & 0.7756 & 0.8447 & 0.8398 \\
     \label{fig:exp3_test_metrics_comparison}
 \end{figure}
 
-\paragraph{Discussion of metrics and modeling choices.}
-MAE and RMSE quantify average prediction error in the original 1--5 rating scale, while Spearman correlation measures how well the model preserves the \textit{relative ordering} of sentiment across reviews.
-QWK further captures ordinal agreement by penalizing larger rating mismatches more strongly than small off-by-one errors.
-Rounded accuracy provides an intuitive interpretation by converting the regressor output back into discrete stars, and the 3-class variant reduces ambiguity by grouping 1--2/3/4--5 into negative/neutral/positive sentiment.
-Overall, these results support the choice of regression for an ordinal label: it allows continuous predictions while still enabling comparison through rounded and ordinal metrics.
-
-\paragraph{Takeaway.}
-Under a fixed budget (100k samples and 8 epochs per language), DE emerges as the easiest language for this setup in terms of ordinal consistency and error, EN remains highly competitive and achieves the best exact-star accuracy, and FR is the most challenging on discrete agreement metrics.
+\paragraph{ }
 
 % =========================================================
 % 4. Discussion
@@ -848,6 +829,13 @@ While it wasn’t as strong as the single-language model on German reviews, it p
 It is more flexible and is a better choice when the task involves multiple languages or when data comes from different linguistic backgrounds.
 In summary, if you’re working with data in just one language, the single-language model is probably the best choice. But if you need to handle reviews or text in multiple languages, the multilingual model is more versatile and offers better performance across languages.
 
+\paragraph{Per-language performance ranking}
+MAE and RMSE quantify average prediction error in the original 1-5 rating scale, while Spearman correlation measures how well the model preserves the \textit{relative ordering} of sentiment across reviews.
+QWK further captures ordinal agreement by penalizing larger rating mismatches more strongly than small off-by-one errors.
+Rounded accuracy provides an intuitive interpretation by converting the regressor output back into discrete stars, and the 3-class variant reduces ambiguity by grouping 1-2/3/4-5 into negative/neutral/positive sentiment.
+Overall, these results support the choice of regression for an ordinal label: it allows continuous predictions while still enabling comparison through rounded and ordinal metrics.
+Under a fixed budget (100k samples and 8 epochs per language), DE emerges as the easiest language for this setup in terms of ordinal consistency and error, EN remains highly competitive and achieves the best exact-star accuracy, and FR is the most challenging on discrete agreement metrics.
+
 % =========================================================
 % 5. Conclusion
 % =========================================================
@@ -867,7 +855,7 @@ Future work will systematically evaluate data requirements per language and comp
 \bibitem{devlin2019bert}
 Devlin J., Chang M.-W., Lee K., Toutanova K.,
 \textit{BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding},
-\textit{Proceedings of NAACL-HLT}, 2019, pp. 4171--4186.
+\textit{Proceedings of NAACL-HLT}, 2019, pp. 4171-4186.
 
 \bibitem{sanh2019distilbert}
 Sanh V., Debut L., Chaumond J., Wolf T.,
@@ -877,7 +865,7 @@ Sanh V., Debut L., Chaumond J., Wolf T.,
 \bibitem{wolf2020transformers}
 Wolf T., Debut L., Sanh V., et al.,
 \textit{Transformers: State-of-the-Art Natural Language Processing},
-\textit{Proceedings of EMNLP: System Demonstrations}, 2020, pp. 38--45.
+\textit{Proceedings of EMNLP: System Demonstrations}, 2020, pp. 38-45.
 
 \bibitem{wandb}
 Biewald L.,
@@ -924,7 +912,7 @@ This project aligns with the course learning objectives by requiring:
 \toprule
 \textbf{Member} & \textbf{Main contributions} \\
 \midrule
-Imanshu Sharma & Per-Language performance ranking \\
+Himanshu Sharma & Per-Language performance ranking \\
 Alberto Aiello & Multilingual model vs Singlelingual model, dataset preprocessing, training pipeline, inference, report \\
 Luca Anzaldi & Regression setup, metrics (QWK/Spearman), training pipeline, test on different dataset size, report \\
 \bottomrule

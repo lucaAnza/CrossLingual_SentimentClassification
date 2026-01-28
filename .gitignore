@@ -22,6 +22,7 @@ venv/
 
 # Environment files
 .env
+.env.local
 
 # LaTeX build artifacts (keep source .tex, images, and optionally PDF)
 *.aux
