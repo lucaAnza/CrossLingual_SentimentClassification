@@ -1,13 +1,19 @@
 import os
+import sys
 from dotenv import load_dotenv
 from datasets import load_dataset
 import numpy as np
 from transformers import AutoTokenizer, DataCollatorWithPadding
 from transformers import AutoModelForSequenceClassification, TrainingArguments, Trainer
 
-from utils import preprocessing
+# Ensure repo root is on sys.path so `from experiments...` imports work when running this file directly.
+REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
+if REPO_ROOT not in sys.path:
+    sys.path.insert(0, REPO_ROOT)
 
-load_dotenv()  # loads .env
+from experiments.utils import preprocessing
+
+load_dotenv(dotenv_path=os.path.join(REPO_ROOT, ".env"))  # loads .env (if present)
 
 
 # =========  PARAMS =========
@@ -24,10 +30,31 @@ MAX_LENGTH = int(max_length_raw) if max_length_raw else None
 
 def find_latest_checkpoint(model_dir):
     if not os.path.isdir(model_dir):
-        raise FileNotFoundError(f"Model directory not found: {model_dir}")
+        raise FileNotFoundError(
+            f"Model directory not found: {model_dir}\n"
+            f"Expected a directory created by training. Run:\n"
+            f"  python experiments/exp_3/experiment3.py\n"
+            f"from the repo root (or set your PYTHONPATH accordingly)."
+        )
     checkpoints = [d for d in os.listdir(model_dir) if d.startswith("checkpoint-")]
     if not checkpoints:
-        raise FileNotFoundError(f"No checkpoints found in {model_dir}")
+        # Fallback: allow loading directly from the run folder if a final model was saved there.
+        # (Our training script calls `trainer.save_model(output_dir)` and `tokenizer.save_pretrained(output_dir)`.)
+        has_config = os.path.isfile(os.path.join(model_dir, "config.json"))
+        has_weights = any(
+            os.path.isfile(os.path.join(model_dir, f))
+            for f in ("model.safetensors", "pytorch_model.bin")
+        )
+        if has_config and has_weights:
+            return model_dir
+
+        contents = sorted(os.listdir(model_dir))
+        raise FileNotFoundError(
+            f"No checkpoints found in {model_dir}\n"
+            f"Directory contents: {contents}\n"
+            f"Fix: run training so it saves either a `checkpoint-*` folder (per epoch) or a final model.\n"
+            f"Also ensure env vars match between train and eval (RUN_PREFIX, SAMPLE_SIZE, LANGUAGES)."
+        )
     checkpoints.sort(key=lambda x: int(x.split("-")[1]))
     return os.path.join(model_dir, checkpoints[-1])
 
@@ -127,6 +154,13 @@ def compute_metrics(eval_pred):
 
 
 # ==================== LOAD DATASET ====================
+if not dataset_path:
+    raise ValueError(
+        "DATASET_PATH is not set. Put it in your .env or export it, e.g.\n"
+        "  DATASET_PATH=/absolute/path/to/dataset_folder\n"
+        "The folder must contain train.csv, test.csv, validation.csv."
+    )
+
 amazon_db = load_dataset(
     "csv",
     data_files={
@@ -143,7 +177,7 @@ results = []
 
 for lang in LANGUAGES:
     run_name = f"{run_prefix}_{lang}_{SAMPLE_SIZE or 'full'}"
-    model_dir = os.path.join("models", run_name)
+    model_dir = os.path.join(REPO_ROOT, "models", run_name)
     checkpoint_path = find_latest_checkpoint(model_dir)
 
     lang_db = filter_by_language(amazon_db, lang)

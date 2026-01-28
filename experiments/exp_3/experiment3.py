@@ -1,4 +1,5 @@
 import os
+import sys
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"  # 0=all, 1=filter INFO, 2=filter WARNING, 3=filter ERROR
 
 from dotenv import load_dotenv
@@ -8,10 +9,16 @@ import torch
 import wandb
 from transformers import AutoTokenizer, DataCollatorWithPadding
 from transformers import AutoModelForSequenceClassification, TrainingArguments, Trainer
+
+# Ensure repo root is on sys.path so `from experiments...` imports work when running this file directly.
+REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
+if REPO_ROOT not in sys.path:
+    sys.path.insert(0, REPO_ROOT)
+
 from experiments.utils import preprocessing
 
 
-load_dotenv()  # take environment variables from .env.
+load_dotenv(dotenv_path=os.path.join(REPO_ROOT, ".env"))  # take environment variables from .env (if present).
 
 
 # ==================== PARAMS ====================
@@ -25,7 +32,10 @@ sample_size_raw = os.getenv("SAMPLE_SIZE", "200000")
 SAMPLE_SIZE = int(sample_size_raw) if sample_size_raw else None
 
 run_prefix = os.getenv("RUN_PREFIX", "exp3_regression")
-base_output_dir = "models"
+# Where to save trained models/checkpoints.
+# In Colab, set e.g. `os.environ["SAVE_ROOT"] = "/content/drive/MyDrive/crosslingual_models"`
+# before running this script to write directly to Google Drive.
+base_output_dir = os.path.abspath(os.path.expanduser(os.getenv("SAVE_ROOT", os.path.join(REPO_ROOT, "models"))))
 
 use_wandb = bool(os.getenv("WANDB_API_KEY"))
 report_list = ["wandb"] if use_wandb else ["none"]
@@ -212,9 +222,22 @@ for lang in LANGUAGES:
     model.to(device)
     print(f"Starting training for language: {lang}")
 
-    print("Do you want to resume from a checkpoint? (y/n)")
-    resume = input().strip().lower() == "y"
+    resume_env = os.getenv("RESUME", "").strip().lower()
+    if resume_env in {"y", "yes", "true", "1"}:
+        resume = True
+    elif resume_env in {"n", "no", "false", "0"}:
+        resume = False
+    else:
+        try:
+            print("Do you want to resume from a checkpoint? (y/n)")
+            resume = input().strip().lower() == "y"
+        except EOFError:
+            resume = False
     trainer.train(resume_from_checkpoint=resume)
+
+    # Save a loadable model to `output_dir`.
+    # With `load_best_model_at_end=True`, this persists the best weights for eval.
+    trainer.save_model(output_dir)
 
     test_metrics = trainer.evaluate(eval_dataset=amazon_db_tokenized["test"], metric_key_prefix="test")
     test_metrics["language"] = lang

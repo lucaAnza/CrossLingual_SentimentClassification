@@ -2,3 +2,35 @@
 envs.env
 /models
 temp.ipynb
+crosslingual.zip
+
+# macOS
+.DS_Store
+
+# Python caches / virtualenvs
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ipynb_checkpoints/
+.venv/
+.venv_plot/
+venv/
+
+# Local caches created for plotting / tooling
+.cache/
+.matplotlib/
+
+# Environment files
+.env
+
+# LaTeX build artifacts (keep source .tex, images, and optionally PDF)
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.run.xml
+*.synctex.gz

@@ -421,7 +421,18 @@ The data is split as follows:\\
 The same model architecture is used for both types of models: distilbert-base-multilingual-cased, a transformer-based model. This model has been pre-trained on a multilingual corpus and fine-tuned for the task of sentiment analysis.
 
 \subsubsection{Per-language performance ranking}
-\todo{HIMANSHU or ALBERTO}
+In the third experiment, we focus on \textbf{ranking} the languages by how well a comparable model performs on each of them.
+In our setting, ``ranking'' does not mean predicting a ranked list directly; instead, it refers to a \textit{performance-based ordering} of languages obtained by training the same model with the same budget and then comparing the resulting evaluation metrics.
+This analysis is useful because it highlights which languages are easier or harder for the model under identical conditions, and it provides a more fine-grained view than an overall average across all languages.
+
+The supervision signal is the \textbf{1--5 star rating} associated with each review, which can be interpreted as an \textbf{ordinal} measure of sentiment intensity.
+To preserve this ordering and avoid forcing sharp class boundaries, we treat the task as \textbf{regression}: the star rating $y \in \{1,2,3,4,5\}$ is normalized to $[0,1]$ during training and the model predicts a continuous score that can represent intermediate sentiment levels.
+For evaluation, we report both continuous and ordinal/rounded metrics.
+In particular, we compute MAE and RMSE on the original 1--5 scale, and we also compute \textbf{rounded accuracies} by mapping the continuous prediction back to the nearest star rating (5-class) or to a 3-class sentiment bin.
+Finally, because the labels are ordinal, we include \textbf{Spearman correlation} and \textbf{Quadratic Weighted Kappa (QWK)} to quantify how well the predicted scores preserve the relative ranking of sentiments and to penalize large rating discrepancies more than small ones.
+
+To obtain a fair comparison, we train \textbf{one model per language} using the same backbone (multilingual DistilBERT) and the same training hyperparameters, and we keep the dataset size fixed per language.
+We then rank languages based on ordinal consistency metrics (e.g., QWK/Spearman) and error metrics (e.g., RMSE), which together provide an interpretable view of per-language difficulty.
 
 
 % =========================================================
@@ -700,6 +711,122 @@ F1 Score & 0.6966 & 0.5390 \\
     \caption{Errors by language for the Multilingual Model.}
     \label{fig:multilingual_errors}
 \end{figure}
+
+\subsubsection{Results \& Discussion}
+This section reports the results of Experiment 3 (per-language ranking) for the regression setup.
+We trained a separate \textit{distilbert-base-multilingual-cased} regressor per language (EN/DE/FR) using 100k samples per language and evaluated each model using the regression-oriented metrics described in Section 2.
+Since the target is ordinal (1--5 stars), we interpret performance using both error-based measures (MAE/RMSE) and ordinal consistency measures (Spearman and QWK), as well as rounded accuracies that map the continuous score back to discrete star ratings.
+
+\paragraph{Training-time validation curves.}
+Table~\ref{tab:exp3_val_epoch_metrics} summarizes the epoch-by-epoch validation metrics for the three languages.
+Across all languages, the largest improvements occur in the first 2--4 epochs, after which the curves begin to plateau.
+This behavior is consistent with the use of a pretrained multilingual encoder: fine-tuning quickly adapts the representation to sentiment cues, while later epochs yield smaller gains and can slightly fluctuate.
+Figures~\ref{fig:exp3_val_rounded_acc}--\ref{fig:exp3_val_rmse} visualize these trends for rounded accuracy, QWK, and RMSE.
+
+\begin{table}[H]
+\centering
+\resizebox{\textwidth}{!}{
+\begin{tabular}{cccc ccc ccc}
+\toprule
+\textbf{Epoch} & \multicolumn{3}{c}{\textbf{EN}} & \multicolumn{3}{c}{\textbf{DE}} & \multicolumn{3}{c}{\textbf{FR}} \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-7}\cmidrule(lr){8-10}
+ & \textbf{Acc (5)$\uparrow$} & \textbf{QWK$\uparrow$} & \textbf{RMSE$\downarrow$}
+ & \textbf{Acc (5)$\uparrow$} & \textbf{QWK$\uparrow$} & \textbf{RMSE$\downarrow$}
+ & \textbf{Acc (5)$\uparrow$} & \textbf{QWK$\uparrow$} & \textbf{RMSE$\downarrow$} \\
+\midrule
+1 & 0.5578 & 0.8231 & 0.7417 & 0.5264 & 0.8185 & 0.7611 & 0.5220 & 0.8163 & 0.7520 \\
+2 & 0.5962 & 0.8490 & 0.7094 & 0.5772 & 0.8468 & 0.7176 & 0.5472 & 0.8401 & 0.7432 \\
+3 & 0.6052 & 0.8536 & 0.7094 & 0.5728 & 0.8466 & 0.7135 & 0.5522 & 0.8395 & 0.7231 \\
+4 & 0.5984 & 0.8488 & 0.7063 & 0.5840 & 0.8491 & 0.6979 & 0.5490 & 0.8351 & 0.7122 \\
+5 & 0.6044 & 0.8502 & 0.7150 & 0.5880 & 0.8526 & 0.6970 & 0.5578 & 0.8445 & 0.7185 \\
+6 & 0.6008 & 0.8485 & 0.7134 & 0.5836 & 0.8513 & 0.6983 & 0.5552 & 0.8404 & 0.7195 \\
+7 & 0.6080 & 0.8505 & 0.7205 & 0.5918 & 0.8527 & 0.7028 & 0.5536 & 0.8393 & 0.7209 \\
+8 & 0.6058 & 0.8499 & 0.7202 & 0.5930 & 0.8535 & 0.7033 & 0.5532 & 0.8397 & 0.7221 \\
+\bottomrule
+\end{tabular}
+}
+\caption{Experiment 3 validation metrics per epoch for English (EN), German (DE), and French (FR) using the regression setup (100k samples per language).}
+\label{tab:exp3_val_epoch_metrics}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{../figures/exp3/exp3_val_rounded_accuracy_vs_epoch.png}
+    \caption{Experiment 3 validation rounded accuracy (5-class) across epochs for EN/DE/FR (regression).}
+    \label{fig:exp3_val_rounded_acc}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{../figures/exp3/exp3_val_qwk_vs_epoch.png}
+    \caption{Experiment 3 validation QWK across epochs for EN/DE/FR (regression).}
+    \label{fig:exp3_val_qwk}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{../figures/exp3/exp3_val_rmse_vs_epoch.png}
+    \caption{Experiment 3 validation RMSE across epochs for EN/DE/FR (regression).}
+    \label{fig:exp3_val_rmse}
+\end{figure}
+
+\paragraph{Final training summary.}
+After 8 epochs, training converges to a stable loss for each language (Table~\ref{tab:exp3_train_summary}), aligning with the validation plateau observed in Figures~\ref{fig:exp3_val_rounded_acc}--\ref{fig:exp3_val_rmse}.
+
+\begin{table}[H]
+\centering
+\rowcolors{2}{white}{white}
+\begin{tabular}{lc}
+\toprule
+\textbf{Language} & \textbf{Final train loss (epoch 8)$\downarrow$} \\
+\midrule
+EN & 0.02806 \\
+DE & 0.03127 \\
+FR & 0.03172 \\
+\bottomrule
+\end{tabular}
+\caption{Final training loss after 8 epochs for Experiment 3 (regression).}
+\label{tab:exp3_train_summary}
+\end{table}
+
+\paragraph{Test-time evaluation and language ranking.}
+Table~\ref{tab:exp3_test_metrics} reports the final test performance.
+German (DE) achieves the strongest overall results, with the lowest RMSE and the highest Spearman and QWK, indicating both low error and strong ordinal agreement.
+English (EN) follows closely and attains the best rounded 5-class accuracy, showing that its predictions most often match the exact star rating after rounding.
+French (FR) is consistently weaker on rounded accuracy and QWK, suggesting that exact-star agreement and ordinal consistency are more challenging for this language under the same training budget.
+
+\begin{table}[H]
+\centering
+\resizebox{\textwidth}{!}{
+\begin{tabular}{lccccccc}
+\toprule
+\textbf{Language} & \textbf{Loss$\downarrow$} & \textbf{MAE$\downarrow$} & \textbf{RMSE$\downarrow$} & \textbf{Acc (5)$\uparrow$} & \textbf{Acc (3)$\uparrow$} & \textbf{Spearman$\uparrow$} & \textbf{QWK$\uparrow$} \\
+\midrule
+EN & 0.03236 & 0.51298 & 0.71959 & \cellcolor{lightgreen}0.6056 & 0.7828 & 0.8389 & 0.8441 \\
+DE & \cellcolor{lightgreen}0.02911 & \cellcolor{lightgreen}0.50788 & \cellcolor{lightgreen}0.68250 & 0.6000 & \cellcolor{lightgreen}0.7914 & \cellcolor{lightgreen}0.8568 & \cellcolor{lightgreen}0.8585 \\
+FR & 0.03143 & 0.55132 & 0.70910 & 0.5508 & 0.7756 & 0.8447 & 0.8398 \\
+\bottomrule
+\end{tabular}
+}
+\caption{Experiment 3 final test metrics per language for the regression model. Best values per metric are highlighted (lower is better for Loss/MAE/RMSE; higher is better otherwise).}
+\label{tab:exp3_test_metrics}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\linewidth]{../figures/exp3/exp3_test_metric_comparison.png}
+    \caption{Experiment 3 comparison of final test metrics across languages (rounded accuracy, QWK, Spearman).}
+    \label{fig:exp3_test_metrics_comparison}
+\end{figure}
+
+\paragraph{Discussion of metrics and modeling choices.}
+MAE and RMSE quantify average prediction error in the original 1--5 rating scale, while Spearman correlation measures how well the model preserves the \textit{relative ordering} of sentiment across reviews.
+QWK further captures ordinal agreement by penalizing larger rating mismatches more strongly than small off-by-one errors.
+Rounded accuracy provides an intuitive interpretation by converting the regressor output back into discrete stars, and the 3-class variant reduces ambiguity by grouping 1--2/3/4--5 into negative/neutral/positive sentiment.
+Overall, these results support the choice of regression for an ordinal label: it allows continuous predictions while still enabling comparison through rounded and ordinal metrics.
+
+\paragraph{Takeaway.}
+Under a fixed budget (100k samples and 8 epochs per language), DE emerges as the easiest language for this setup in terms of ordinal consistency and error, EN remains highly competitive and achieves the best exact-star accuracy, and FR is the most challenging on discrete agreement metrics.
 
 % =========================================================
 % 4. Discussion
