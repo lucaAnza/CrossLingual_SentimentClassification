@@ -1,3 +1,0 @@
-1. Add accuracy into compute_metrics
-2. Fix wand_db log report into compute_metrics
-3. Fix experiment1.py offical dir
